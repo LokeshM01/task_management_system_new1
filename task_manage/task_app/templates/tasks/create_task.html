@@ -1,147 +1,222 @@
-<!-- task_app/templates/tasks/create_task.html -->
-
 {% extends "base_generic.html" %}
 
 {% block content %}
-  <style>
-    /* Inline CSS for Task Detail Page */
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
-      color: #333;
-      margin: 0;
-      padding: 0;
+<h2>Create a Task</h2>
+<hr>
+
+<div class="form-container">
+    <form method="post" enctype="multipart/form-data" id="createTaskForm">
+        {% csrf_token %}
+
+        <!-- Assigned By (Disabled) -->
+        <div class="form-group">
+            <label for="assigned_by">Assigned by:</label>
+            <select id="assigned_by" name="assigned_by" disabled>
+                <option selected>{{ request.user.username }}</option>
+            </select>
+        </div>
+
+        <!-- Ticket Type -->
+        <div class="form-group">
+            <label for="ticket_type">Ticket Type:</label>
+            <select id="ticket_type" name="ticket_type">
+                <option value="Bug Fixing - Live">Bug Fixing - Live</option>
+                <option value="Bug Fixing - Staging">Bug Fixing - Staging</option>
+                <option value="Hardware">Hardware</option>
+                <option value="Issues">Issues</option>
+                <option value="New Engineering Requirement">New Engineering Requirement</option>
+                <option value="Publishing">Publishing</option>
+                <option value="Research">Research</option>
+                <option value="Attendance">Attendance</option>
+                <option value="Sales">Sales</option>
+                <option value="Service">Service</option>
+                <option value="Testing">Testing</option>
+                <option value="Others">Others</option>
+            </select>
+        </div>
+
+        <!-- Priority -->
+        <div class="form-group">
+            <label for="priority">Priority:</label>
+            <select id="priority" name="priority">
+                <option value="High Priority">High Priority</option>
+                <option value="Low Priority">Low Priority</option>
+                <option value="Medium Priority">Medium Priority</option>
+                <option value="Urgent">Urgent</option>
+            </select>
+        </div>
+
+        <!-- Department -->
+        <div class="form-group">
+            <label for="department">Department:</label>
+            <select id="department" name="department">
+                <option value="Engineering Team">Engineering Team</option>
+                <option value="Product Team">Product Team</option>
+                <option value="Sales Team">Sales Team</option>
+                <option value="Content Team">Content Team</option>
+                <option value="Customer Support">Customer Support</option>
+                <option value="HR">HR</option>
+                <option value="Non Management Staff">Non Management Staff</option>
+                <option value="Publishing Team">Publishing Team</option>
+                <option value="Help Desk">Help Desk</option>
+                <option value="Executive Managers">Executive Managers</option>
+            </select>
+        </div>
+
+        <!-- Assigned To -->
+        <div class="form-group">
+            <label for="assigned_to">Assigned to:</label>
+            <select id="assigned_to" name="assigned_to">
+                {% for user in users %}
+                    <option value="{{ user.id }}">{{ user.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Deadline -->
+        <div class="form-group">
+            <label for="deadline">Deadline:</label>
+            <input type="date" id="deadline" name="deadline">
+        </div>
+
+        <!-- Subject -->
+        <div class="form-group full-width">
+            <label for="subject">Subject:</label>
+            <input type="text" id="subject" name="subject" required>
+        </div>
+
+        <!-- Request Details (Rich Text Editor) -->
+        <div class="form-group full-width">
+            <label for="request_details">Request details:</label>
+            <textarea id="request_details" name="request_details" rows="4"></textarea>
+        </div>
+
+        <!-- Attach File -->
+        <div class="form-group">
+            <label for="attach_file">Attach File:</label>
+            <input type="file" id="attach_file" name="attach_file" accept=".pdf,.ppt,.pptx,.doc,.docx,.mp4,.jpg,.png,.jpeg">
+        </div>
+
+        <!-- Create Task Button -->
+        <button type="submit" class="submit-btn">Create Task</button>
+    </form>
+</div>
+
+<!-- Success Popup -->
+<div id="successPopup" class="popup">
+    <div class="popup-content">
+        <p>Task created successfully!</p>
+        <button onclick="closePopup()">✖</button>
+    </div>
+</div>
+
+<!-- Inline CSS for styling -->
+<style>
+    .form-container {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        max-width: 800px;
+        margin: 0 auto;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     h2 {
-      color: #4CAF50;
-      font-size: 28px;
-      margin-bottom: 20px;
+        text-align: center;
+        color: #333;
     }
 
-    .form-container, .task-details-container {
-      background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
+    hr {
+        border: none;
+        border-top: 2px solid #4CAF50;
+        margin: 10px 0 20px;
     }
 
-    .button-container {
-      display: flex;
-      gap: 10px;
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 15px;
     }
 
-    .btn {
-      background-color: #1ABC9C;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      text-decoration: none;
-      display: inline-block;
+    .form-group label {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
     }
 
-    .btn:hover {
-      background-color: #16A085;
+    .form-group select, .form-group input[type="text"], 
+    .form-group input[type="date"], .form-group textarea, 
+    .form-group input[type="file"] {
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        outline: none;
+        width: 100%;
+        box-sizing: border-box;
     }
 
-    /* Popup confirmation styling */
+    .submit-btn {
+        background-color: #4CAF50;
+        color: #ffffff;
+        padding: 10px 20px;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    .submit-btn:hover {
+        background-color: #388E3C;
+    }
+
     .popup {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      text-align: center;
-      z-index: 1000;
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
     }
 
-    .popup button {
-      background-color: #1ABC9C;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-  </style>
-
-  <h2>Create Task</h2>
-
-  <div class="form-container">
-    <!-- Task Creation Form -->
-    <form id="taskForm" method="post" enctype="multipart/form-data" action="{% url 'create_task' %}">
-
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit" class="btn">Submit</button>
-    </form>
-  </div>
-
-  <!-- Task Details: Show only if task was successfully created (e.g., task_id is available) -->
-  {% if task and task.task_id %}
-    <div class="task-details-container">
-      <h3>Task Details</h3>
-      <div class="task-detail-field"><strong>Task ID:</strong> {{ task.task_id }}</div>
-      <div class="task-detail-field"><strong>Assigned By:</strong> {{ task.assigned_by.username }}</div>
-      <div class="task-detail-field"><strong>Assigned To:</strong> {{ task.assigned_to.username }}</div>
-      <div class="task-detail-field"><strong>Department:</strong> {{ task.department.name }}</div>
-      <div class="task-detail-field"><strong>Status:</strong> {{ task.status_update_assignee }}</div>
-      <div class="task-detail-field"><strong>Deadline:</strong> {{ task.deadline }}</div>
-      <div class="task-detail-field"><strong>Task Summary:</strong> {{ task.task_summary }}</div>
-      <div class="task-detail-field"><strong>Comments by Manager:</strong> {{ task.comments_by_manager }}</div>
-      <div class="task-detail-field"><strong>Comments by Assignee:</strong> {{ task.comments_by_assignee }}</div>
-    </div>
-  {% endif %}
-
-  <!-- Popup confirmation message -->
-  <div class="popup" id="popup">
-    <p>Task created successfully!</p>
-    <button onclick="closePopup()">Close</button>
-  </div>
-
-  <script>
-    document.querySelector("#taskForm").addEventListener("submit", function(event) {
-      event.preventDefault();  // Prevent default form submission
-      let form = this;
-      
-      // Perform AJAX request
-      fetch(form.action, {
-        method: "POST",
-        body: new FormData(form),
-        headers: {
-          "X-Requested-With": "XMLHttpRequest"
-        }
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.message) {
-          showPopup(data.message);
-          // Display task details dynamically (optional, if needed for AJAX)
-          // Here you may need additional JS to update the task details section dynamically.
-        }
-      });
-    });
-
-    // Show popup confirmation
-    function showPopup(message) {
-      const popup = document.getElementById("popup");
-      popup.style.display = "block";
-      popup.querySelector("p").innerText = message;
+    .popup-content {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        position: relative;
     }
 
-    // Close popup
+    .popup-content button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+    }
+</style>
+
+<!-- Inline JavaScript for Popup and Form Submission -->
+<script>
+    document.getElementById('createTaskForm').onsubmit = function(event) {
+        event.preventDefault();
+        showPopup();
+    };
+
+    function showPopup() {
+        document.getElementById('successPopup').style.display = 'flex';
+    }
+
     function closePopup() {
-      const popup = document.getElementById("popup");
-      popup.style.display = "none";
-      document.getElementById("taskForm").reset();  // Clear the form
+        document.getElementById('successPopup').style.display = 'none';
     }
-  </script>
+</script>
+
 {% endblock %}

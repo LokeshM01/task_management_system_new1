@@ -1,5 +1,3 @@
-# task_app/models.py
-
 from django.db import models
 from django.contrib.auth.models import User
 import random
@@ -37,11 +35,6 @@ class Task(models.Model):
         ('Cancelled', 'Cancelled'),
     ]
 
-    # PRIORITY_LEVELS = [
-    #     ('1', '1'), ('2', '2'),  # Other priority levels
-    #     ('Fixed', 'Fixed')  # If "Fixed" is a valid priority value
-    # ]
-
     PRIORITY_LEVELS = [
         ('low', 'Low'),
         ('medium', 'Medium'),
@@ -63,6 +56,7 @@ class Task(models.Model):
         ('Testing', 'Testing'),
     ]
 
+    # Fields for the Task model
     task_id = models.CharField(max_length=15, unique=True, editable=False)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
     assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='tasks_assigned')
@@ -74,7 +68,7 @@ class Task(models.Model):
     task_summary = models.TextField()
     supporting_files = models.FileField(upload_to='supporting_files/', null=True, blank=True)
     task_category_functional = models.CharField(max_length=50, choices=FUNCTIONAL_CATEGORIES, default='Others')
-    task_category_priority = models.CharField(max_length=10, choices=PRIORITY_LEVELS, default='5')
+    task_category_priority = models.CharField(max_length=10, choices=PRIORITY_LEVELS, default='medium')
     status_update_assignor = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Not Started')
     status_update_assignee = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Not Started')
     comments_by_manager = models.TextField(null=True, blank=True)

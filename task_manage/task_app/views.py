@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Task, UserProfile, Department
 from django.contrib.auth.decorators import login_required
-from .forms import TaskForm, TaskStatusUpdateForm, AssigneeCommentForm
+from .forms import TaskForm, TaskStatusUpdateForm
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -11,12 +11,20 @@ from django.http import JsonResponse
 
 @login_required
 def home(request):
-    # Display tasks assigned to the Departmental Manager's team
+    # Get the user's profile
     user_profile = UserProfile.objects.get(user=request.user)
+
+    # Check if the user is a Departmental Manager
     if user_profile.category == 'Departmental Manager':
-        # Fetch tasks based on department or any specific criteria
+        # Get all tasks associated with the manager's department
         tasks = Task.objects.filter(department=user_profile.department)
-        return render(request, 'tasks/home.html', {'tasks': tasks})
+        
+        # Get unique functional categories
+        functional_categories = Task.FUNCTIONAL_CATEGORIES  # Assuming FUNCTIONAL_CATEGORIES is defined in Task
+
+        return render(request, 'tasks/home.html', {'tasks': tasks, 'functional_categories': functional_categories})
+
+    # Redirect non-departmental managers to their assigned tasks page
     return redirect('assigned_to_me')
 
 @login_required
@@ -106,14 +114,18 @@ def create_task(request):
         if form.is_valid():
             task = form.save(commit=False)
             task.assigned_by = request.user
-            task.department = UserProfile.objects.get(user=task.assigned_to).department
+            task.department = UserProfile.objects.get(user=task.assigned_to).department  # Set department based on assignee
             task.save()
+
+            # Return JSON response for AJAX pop-up confirmation
             return JsonResponse({'message': 'Task created successfully!', 'task_id': task.task_id})
         else:
+            # Return JSON response with form errors
             return JsonResponse({'error': 'Form data is invalid', 'errors': form.errors}, status=400)
     else:
         form = TaskForm(user=request.user)
-        return render(request, 'tasks/create_task.html', {'form': form})
+        users = User.objects.all()  # Retrieve all users for the "Assigned To" dropdown
+        return render(request, 'tasks/create_task.html', {'form': form, 'users': users})
 
 @login_required
 def edit_task(request, task_id):

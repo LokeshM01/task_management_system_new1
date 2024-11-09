@@ -1,5 +1,5 @@
 {% extends 'base_generic.html' %}
-{% load static %} <!-- Add this line to load the static files -->
+{% load static %}
 
 {% block content %}
 <div class="task-manager-container">
@@ -18,46 +18,51 @@
     <div class="main-content">
         <div class="header">
             <h1>Good Morning, {{ request.user.username }}!</h1>
-            <div class="search-bar">
-                <input type="text" placeholder="Search...">
-                <button><img src="{% static 'task_app/images/search-icon.png' %}" alt="Search Icon"></button>
-            </div>
+            <!-- <div class="search-bar">
+                <input type="text" placeholder="Search..." id="searchInput">
+                <button onclick="filterTable()"><img src="{% static 'task_app/images/search-icon.png' %}" alt="Search Icon"></button>
+            </div> -->
         </div>
 
         <!-- Filter Section -->
         <div class="filter-section">
             <label>Filter By:</label>
-            <select>
-                <option>Priority</option>
-                <option>High Priority</option>
-                <option>Medium Priority</option>
-                <option>Low Priority</option>
+
+            <!-- Priority Filter -->
+            <select id="priorityFilter">
+                <option value="">Priority</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+                <option value="Urgent">Urgent</option>
             </select>
-            <select>
-                <option>Status</option>
-                <option>In Progress</option>
-                <option>Completed</option>
-                <option>On Hold</option>
-                <option>Cancelled</option>
+
+            <!-- Status Filter -->
+            <select id="statusFilter">
+                <option value="">Status</option>
+                <option value="Not Started">Not Started</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+                <option value="Stalled">Stalled</option>
+                <option value="Cancelled">Cancelled</option>
             </select>
-            <select>
-                <option>Department</option>
-                <option>Engineering</option>
-                <option>Content</option>
-                <option>Sales</option>
+
+            <!-- Functional Category Filter (Department) -->
+            <select id="departmentFilter">
+                <option value="">Department</option>
+                {% for code, label in functional_categories %}
+                <option value="{{ label }}">{{ label }}</option>
+                {% endfor %}
             </select>
-            <select>
-                <option>Deadline</option>
-                <option>Today</option>
-                <option>This Week</option>
-                <option>This Month</option>
-            </select>
-            <button class="filter-btn">Filter</button>
+
+            <!-- Deadline Filter -->
+            <input type="date" id="deadlineFilter">
+            <button class="filter-btn" onclick="filterTable()">Filter</button>
         </div>
 
         <!-- Task Table -->
         <div class="task-table">
-            <table>
+            <table id="taskTable">
                 <thead>
                     <tr>
                         <th>Keyword</th>
@@ -75,7 +80,7 @@
                             <td>{{ task.task_summary }}</td>
                             <td>{{ task.get_task_category_priority_display }}</td>
                             <td>{{ task.status_update_assignee }}</td>
-                            <td>{{ task.department.name }}</td>
+                            <td>{{ task.task_category_functional }}</td>
                             <td>{{ task.deadline }}</td>
                         </tr>
                     {% empty %}
@@ -91,14 +96,12 @@
 
 <!-- Inline CSS for Home Page with Green Theme -->
 <style>
-    /* Container */
     .task-manager-container {
         display: flex;
         height: 100vh;
         font-family: Arial, sans-serif;
     }
 
-    /* Sidebar */
     .sidebar {
         background-color: #f4f4f9;
         color: #333;
@@ -135,7 +138,6 @@
         color: #fff;
     }
 
-    /* Main Content */
     .main-content {
         flex: 1;
         padding: 20px;
@@ -177,7 +179,7 @@
         margin-right: 10px;
     }
 
-    .filter-section select, .filter-section button {
+    .filter-section select, .filter-section button, .filter-section input[type="date"] {
         padding: 8px;
         margin-right: 10px;
         border-radius: 5px;
@@ -195,7 +197,6 @@
         background-color: #388E3C; /* Darker Green */
     }
 
-    /* Task Table */
     .task-table {
         margin-top: 20px;
     }
@@ -225,4 +226,43 @@
         background-color: #E8F5E9; /* Light Green */
     }
 </style>
+
+<!-- Inline JavaScript for Filtering -->
+<script>
+    function filterTable() {
+        const priorityFilter = document.getElementById('priorityFilter').value.toLowerCase();
+        const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+        const departmentFilter = document.getElementById('departmentFilter').value.toLowerCase();
+        const deadlineFilter = document.getElementById('deadlineFilter').value;
+
+        const table = document.getElementById('taskTable');
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < rows.length; i++) {
+            const cells = rows[i].getElementsByTagName('td');
+            if (cells.length > 0) {
+                const priority = cells[2].innerText.toLowerCase();
+                const status = cells[3].innerText.toLowerCase();
+                const department = cells[4].innerText.toLowerCase();
+                const deadline = cells[5].innerText; // format: YYYY-MM-DD
+
+                let displayRow = true;
+
+                if (priorityFilter && priority !== priorityFilter) displayRow = false;
+                if (statusFilter && status !== statusFilter) displayRow = false;
+                if (departmentFilter && department !== departmentFilter) displayRow = false;
+
+                if (deadlineFilter) {
+                    const deadlineDate = new Date(deadline);
+                    const selectedDate = new Date(deadlineFilter);
+                    if (deadlineDate.getTime() !== selectedDate.getTime()) {
+                        displayRow = false;
+                    }
+                }
+
+                rows[i].style.display = displayRow ? '' : 'none';
+            }
+        }
+    }
+</script>
 {% endblock %}
