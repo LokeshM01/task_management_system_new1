@@ -1,14 +1,13 @@
-# task_app/views.py
-
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Task, UserProfile, Department
 from django.contrib.auth.decorators import login_required
 from .forms import TaskForm, TaskStatusUpdateForm, AssigneeCommentForm
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User
-from datetime import datetime, timedelta
-from django.db.models import Q
 from django.utils import timezone
+from django.db.models import Q
+from datetime import datetime, timedelta
+from django.http import JsonResponse
 
 @login_required
 def view_system_logs(request):
@@ -142,41 +141,25 @@ def profile(request):
             'is_manager': False,
         })
 
-
-
 @login_required
 def create_task(request):
-    user_profile = UserProfile.objects.get(user=request.user)
-
-    # Check if the current user has permission to create tasks
-    if user_profile.category not in ['Executive Management', 'Departmental Manager']:
-        raise PermissionDenied
-
     if request.method == 'POST':
-        form = TaskForm(request.POST, request.FILES, user=request.user)  # Pass the user to the form
+        form = TaskForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             task = form.save(commit=False)
             task.assigned_by = request.user
-            assignee_profile = UserProfile.objects.get(user=task.assigned_to)
-
-            # Check assignment permissions
-            if user_profile.category == 'Departmental Manager':
-                if assignee_profile.category == 'Non-Management' and assignee_profile.department == user_profile.department:
-                    task.department = assignee_profile.department
-                elif assignee_profile.category == 'Departmental Manager':
-                    task.department = assignee_profile.department
-                else:
-                    raise PermissionDenied("You can only assign tasks to Non-Management in your department or Departmental Managers.")
-
-            # Executive Management has no restrictions
-            else:
-                task.department = assignee_profile.department
-
+            task.department = UserProfile.objects.get(user=task.assigned_to).department  # Set department based on assignee
             task.save()
-            return redirect('task_detail', task_id=task.task_id)
+
+            # Return JSON response for AJAX pop-up confirmation
+            return JsonResponse({'message': 'Task created successfully!', 'task_id': task.task_id})
+        else:
+            # Return JSON response with form errors
+            return JsonResponse({'error': 'Form data is invalid', 'errors': form.errors}, status=400)
     else:
-        form = TaskForm(user=request.user)  # Pass the user to the form
-    return render(request, 'tasks/create_task.html', {'form': form})
+        # If not a POST request, display the form as HTML
+        form = TaskForm(user=request.user)
+        return render(request, 'tasks/create_task.html', {'form': form})
 
 @login_required
 def edit_task(request, task_id):
@@ -238,7 +221,38 @@ def update_task_status(request, task_id):
         'task': task
     })
 
+@login_required
+def mark_task_completed(request, task_id):
+    """
+    Allows only the creator of the task to mark it as completed.
+    """
+    task = get_object_or_404(Task, task_id=task_id)
 
+    if task.assigned_by != request.user:
+        raise PermissionDenied("Only the creator can mark this task as completed.")
+
+    # Mark the task as completed
+    task.status_update_assignor = 'Completed'
+    task.status_update_assignee = 'Completed'
+    task.save()
+    
+    return redirect('task_detail', task_id=task.task_id)
+
+@login_required
+def reassign_task(request, task_id):
+    """
+    Allows the assignee to reassign the task back to the creator.
+    """
+    task = get_object_or_404(Task, task_id=task_id)
+
+    if task.assigned_to != request.user:
+        raise PermissionDenied("Only the assignee can reassign the task back to the creator.")
+
+    # Reassign the task to the original creator
+    task.assigned_to = task.assigned_by
+    task.save()
+
+    return redirect('task_detail', task_id=task.task_id)
 
 @login_required
 def dashboard(request):

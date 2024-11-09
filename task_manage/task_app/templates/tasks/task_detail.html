@@ -89,6 +89,11 @@
       {% if task.assigned_by == user %}
         <a href="{% url 'edit_task' task.task_id %}">Edit Task</a>
       {% endif %}
+
+      <!-- Display "Reassign to Creator" link only if the current user is the assignee -->
+      {% if task.assigned_to == user %}
+        <a href="{% url 'reassign_task' task.task_id %}">Reassign to Creator</a>
+      {% endif %}
     </div>
   </div>
 {% endblock %}

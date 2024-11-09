@@ -4,7 +4,7 @@
 
 {% block content %}
   <style>
-    /* Inline CSS for Create Task Page */
+    /* Inline CSS for Task Detail Page */
     body {
       font-family: Arial, sans-serif;
       background-color: #f4f4f9;
@@ -19,29 +19,20 @@
       margin-bottom: 20px;
     }
 
-    .form-container {
+    .form-container, .task-details-container {
       background-color: white;
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    form {
-      width: 100%;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 12px;
       margin-bottom: 20px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 16px;
     }
 
-    button {
+    .button-container {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
       background-color: #1ABC9C;
       color: white;
       padding: 10px 20px;
@@ -49,34 +40,108 @@
       border-radius: 5px;
       cursor: pointer;
       font-size: 16px;
+      text-decoration: none;
+      display: inline-block;
     }
 
-    button:hover {
+    .btn:hover {
       background-color: #16A085;
     }
 
-    /* Navbar Styling */
-    .navbar a {
-      margin-right: 15px;
-      color: white;
-      padding: 8px 12px;
-      background-color: #34495E;  /* Same color as in task details */
-      text-decoration: none;
-      border-radius: 4px;
+    /* Popup confirmation styling */
+    .popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      z-index: 1000;
     }
 
-    .navbar a:hover {
-      background-color: #1ABC9C;  /* Same hover color as in task details */
+    .popup button {
+      background-color: #1ABC9C;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
     }
   </style>
 
   <h2>Create Task</h2>
 
   <div class="form-container">
-    <form method="post" enctype="multipart/form-data">
+    <!-- Task Creation Form -->
+    <form id="taskForm" method="post" enctype="multipart/form-data" action="{% url 'create_task' %}">
+
       {% csrf_token %}
       {{ form.as_p }}
-      <button type="submit">Submit</button>
+      <button type="submit" class="btn">Submit</button>
     </form>
   </div>
+
+  <!-- Task Details: Show only if task was successfully created (e.g., task_id is available) -->
+  {% if task and task.task_id %}
+    <div class="task-details-container">
+      <h3>Task Details</h3>
+      <div class="task-detail-field"><strong>Task ID:</strong> {{ task.task_id }}</div>
+      <div class="task-detail-field"><strong>Assigned By:</strong> {{ task.assigned_by.username }}</div>
+      <div class="task-detail-field"><strong>Assigned To:</strong> {{ task.assigned_to.username }}</div>
+      <div class="task-detail-field"><strong>Department:</strong> {{ task.department.name }}</div>
+      <div class="task-detail-field"><strong>Status:</strong> {{ task.status_update_assignee }}</div>
+      <div class="task-detail-field"><strong>Deadline:</strong> {{ task.deadline }}</div>
+      <div class="task-detail-field"><strong>Task Summary:</strong> {{ task.task_summary }}</div>
+      <div class="task-detail-field"><strong>Comments by Manager:</strong> {{ task.comments_by_manager }}</div>
+      <div class="task-detail-field"><strong>Comments by Assignee:</strong> {{ task.comments_by_assignee }}</div>
+    </div>
+  {% endif %}
+
+  <!-- Popup confirmation message -->
+  <div class="popup" id="popup">
+    <p>Task created successfully!</p>
+    <button onclick="closePopup()">Close</button>
+  </div>
+
+  <script>
+    document.querySelector("#taskForm").addEventListener("submit", function(event) {
+      event.preventDefault();  // Prevent default form submission
+      let form = this;
+      
+      // Perform AJAX request
+      fetch(form.action, {
+        method: "POST",
+        body: new FormData(form),
+        headers: {
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.message) {
+          showPopup(data.message);
+          // Display task details dynamically (optional, if needed for AJAX)
+          // Here you may need additional JS to update the task details section dynamically.
+        }
+      });
+    });
+
+    // Show popup confirmation
+    function showPopup(message) {
+      const popup = document.getElementById("popup");
+      popup.style.display = "block";
+      popup.querySelector("p").innerText = message;
+    }
+
+    // Close popup
+    function closePopup() {
+      const popup = document.getElementById("popup");
+      popup.style.display = "none";
+      document.getElementById("taskForm").reset();  // Clear the form
+    }
+  </script>
 {% endblock %}
