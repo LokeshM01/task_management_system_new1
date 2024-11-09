@@ -22,40 +22,45 @@
             <h1>Good Morning, {{ request.user.username }}!</h1>
         </div>
 
-        <!-- Filter Section -->
-        <div class="filter-section">
-            <label>Filter By:</label>
+        <!-- Filter and Create Task Section -->
+        <div class="filter-create-section">
+            <div class="filters">
+                <label>Filter By:</label>
 
-            <!-- Priority Filter -->
-            <select id="priorityFilter">
-                <option value="">Priority</option>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
-                <option value="Urgent">Urgent</option>
-            </select>
+                <!-- Priority Filter -->
+                <select id="priorityFilter">
+                    <option value="">Priority</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                    <option value="Urgent">Urgent</option>
+                </select>
 
-            <!-- Status Filter -->
-            <select id="statusFilter">
-                <option value="">Status</option>
-                <option value="Not Started">Not Started</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
-                <option value="Stalled">Stalled</option>
-                <option value="Cancelled">Cancelled</option>
-            </select>
+                <!-- Status Filter -->
+                <select id="statusFilter">
+                    <option value="">Status</option>
+                    <option value="Not Started">Not Started</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Stalled">Stalled</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
 
-            <!-- Functional Category Filter (Department) -->
-            <select id="departmentFilter">
-                <option value="">Department</option>
-                {% for code, label in functional_categories %}
-                <option value="{{ label }}">{{ label }}</option>
-                {% endfor %}
-            </select>
+                <!-- Functional Category Filter (Department) -->
+                <select id="departmentFilter">
+                    <option value="">Department</option>
+                    {% for code, label in functional_categories %}
+                    <option value="{{ label }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
 
-            <!-- Deadline Filter -->
-            <input type="date" id="deadlineFilter">
-            <button class="filter-btn" onclick="filterTable()">Filter</button>
+                <!-- Deadline Filter -->
+                <input type="date" id="deadlineFilter">
+                <button class="filter-btn" onclick="filterTable()">Filter</button>
+            </div>
+
+            <!-- Create Task Button -->
+            <button class="create-task-btn" onclick="window.location.href='{% url 'create_task' %}'">Create Task</button>
         </div>
 
         <!-- Task Table -->
@@ -146,18 +151,26 @@
         color: #333;
     }
 
-    .filter-section {
+    .filter-create-section {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         margin-top: 20px;
     }
 
-    .filter-section label {
+    .filters {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .filter-create-section label {
         font-weight: bold;
         margin-right: 10px;
     }
 
-    .filter-section select, .filter-section button, .filter-section input[type="date"] {
+    .filters select, .filters input[type="date"], .filter-btn {
         padding: 8px;
-        margin-right: 10px;
         border-radius: 5px;
         border: 1px solid #ccc;
     }
@@ -170,6 +183,20 @@
     }
 
     .filter-btn:hover {
+        background-color: #388E3C; /* Darker Green */
+    }
+
+    .create-task-btn {
+        padding: 8px 15px;
+        background-color: #4CAF50; /* Green */
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .create-task-btn:hover {
         background-color: #388E3C; /* Darker Green */
     }
 
