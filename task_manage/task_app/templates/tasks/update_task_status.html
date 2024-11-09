@@ -57,24 +57,22 @@
   <!-- Task Status Update Form -->
   <form method="post">
     {% csrf_token %}
+    
+    <!-- Revised Deadline (Visible to Assignee Only) -->
+    {% if task.assigned_to == request.user %}
+      <div class="form-group">
+        <label for="id_revised_completion_date">Revise Deadline:</label>
+        {{ form.revised_completion_date }} <!-- Deadline revision field -->
+      </div>
+    {% endif %}
 
-    <!-- Task Status Update Assignor -->
-    <div class="form-group">
-      <label for="id_status_update_assignor">Status Update (Assignor):</label>
-      {{ form.status_update_assignor }} <!-- Assignor status dropdown -->
-    </div>
-
-    <!-- Task Status Update Assignee -->
-    <div class="form-group">
-      <label for="id_status_update_assignee">Status Update (Assignee):</label>
-      {{ form.status_update_assignee }} <!-- Assignee status dropdown -->
-    </div>
-
-    <!-- Comments Form -->
-    <div class="form-group">
-      <label for="id_comments_by_assignee">Add Comments:</label>
-      {{ comment_form.comments_by_assignee }}  <!-- Comment text area -->
-    </div>
+    <!-- Comments Form (Visible to Assignee Only) -->
+    {% if task.assigned_to == request.user %}
+      <div class="form-group">
+        <label for="id_comments_by_assignee">Add Comments:</label>
+        {{ comment_form.comments_by_assignee }}  <!-- Comment text area -->
+      </div>
+    {% endif %}
     
     <!-- Submit Button -->
     <button type="submit" class="btn">Submit Updates</button>

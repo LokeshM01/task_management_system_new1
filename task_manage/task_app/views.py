@@ -189,36 +189,33 @@ def task_detail(request, task_id):
 
 @login_required
 def update_task_status(request, task_id):
-    """
-    Allows task assignees (Non-Management Staff) to update the task status and add comments.
-    Only the assigned user (assignee) can make updates to the status and comments fields.
-    """
     task = get_object_or_404(Task, task_id=task_id)
-    
-    # Ensure only the assigned user (assignee) can update the task
+
+    # Check that the current user is the assignee
     if task.assigned_to != request.user:
-        raise PermissionDenied
+        raise PermissionDenied("Only the assignee can update this task.")
 
     # Process form submission
     if request.method == 'POST':
         form = TaskStatusUpdateForm(request.POST, instance=task)
         comment_form = AssigneeCommentForm(request.POST, instance=task)
-        
+
         # Check if both forms are valid
         if form.is_valid() and comment_form.is_valid():
-            form.save()  # Save the status update
-            comment_form.save()  # Save the assignee's comment
+            # Save only the deadline revision and comments from assignee
+            form.save()  # This will only save fields included in `TaskStatusUpdateForm`
+            comment_form.save()  # Saves the assignee's comment
             return redirect('task_detail', task_id=task.task_id)
-    
-    # For GET requests, display the forms pre-filled with current data
+
     else:
-        form = TaskStatusUpdateForm(instance=task)  # Form for updating task status
+        # For GET requests, provide the forms pre-filled with current task data
+        form = TaskStatusUpdateForm(instance=task)  # Form for revising the deadline
         comment_form = AssigneeCommentForm(instance=task)  # Form for adding comments
-    
+
     return render(request, 'tasks/update_task_status.html', {
         'form': form,
         'comment_form': comment_form,
-        'task': task
+        'task': task,
     })
 
 @login_required

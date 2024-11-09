@@ -56,7 +56,10 @@ class TaskForm(forms.ModelForm):
 class TaskStatusUpdateForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['status_update_assignee']
+        fields = ['revised_completion_date']  # Only allow deadline revision
+        widgets = {
+            'revised_completion_date': forms.DateInput(attrs={'type': 'date'}),
+        }
 
 class AssigneeCommentForm(forms.ModelForm):
     """
