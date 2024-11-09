@@ -1,0 +1,94 @@
+<!-- task_app/templates/tasks/task_detail.html -->
+
+{% extends 'base_generic.html' %}
+
+{% block content %}
+  <style>
+    /* Inline CSS for Task Detail Page */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    h2 {
+      color: #4CAF50;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .task-detail-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .task-detail-container p {
+      font-size: 16px;
+      margin: 10px 0;
+    }
+
+    h3 {
+      color: #333;
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+
+    a {
+      color: #1ABC9C;
+      text-decoration: none;
+      padding: 10px 15px;
+      background-color: #34495E;
+      color: white;
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 10px;
+    }
+
+    a:hover {
+      background-color: #1ABC9C;
+    }
+
+    .task-links {
+      margin-top: 20px;
+    }
+  </style>
+
+  <h2>Task Details: {{ task.task_id }}</h2>
+
+  <div class="task-detail-container">
+    <p><strong>Assigned By:</strong> {{ task.assigned_by.username }}</p>
+    <p><strong>Assigned To:</strong> {{ task.assigned_to.username }}</p>
+    <p><strong>Department:</strong> {{ task.department.name }}</p>
+    <p><strong>Task Summary:</strong> {{ task.task_summary }}</p>
+    <p><strong>Deadline:</strong> {{ task.deadline }}</p>
+    <p><strong>Priority Level:</strong> {{ task.task_category_priority }}</p>
+    <p><strong>Functional Category:</strong> {{ task.task_category_functional }}</p>
+    <p><strong>Status (Assignor):</strong> {{ task.status_update_assignor }}</p>
+    <p><strong>Status (Assignee):</strong> {{ task.status_update_assignee }}</p>
+    <p><strong>Supporting Files:</strong> <a href="{{ task.supporting_files.url }}">Download</a></p>
+
+    <h3>Comments by Manager</h3>
+    <p>{{ task.comments_by_manager }}</p>
+
+    <h3>Comments by Assignee</h3>
+    <p>{% if task.comments_by_assignee %} {{ task.comments_by_assignee }} {% else %} None {% endif %}</p>
+
+    <!-- Display action links -->
+    <div class="task-links">
+      <!-- Display "Update Status" link only if the current user is the assignee -->
+      {% if task.assigned_to == user %}
+        <a href="{% url 'update_task_status' task.task_id %}">Update Status</a>
+      {% endif %}
+
+      <!-- Display "Edit Task" link only if the current user is the task creator -->
+      {% if task.assigned_by == user %}
+        <a href="{% url 'edit_task' task.task_id %}">Edit Task</a>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

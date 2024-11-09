@@ -1,0 +1,105 @@
+<!-- task_app/templates/tasks/task_list.html -->
+
+{% extends 'base_generic.html' %}
+
+{% block content %}
+  <style>
+    /* Inline CSS for Task List Page */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    h2, h3 {
+      color: #4CAF50;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 28px;
+    }
+
+    h3 {
+      font-size: 22px;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    ul li {
+      margin: 10px 0;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    ul li a {
+      color: #1ABC9C;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    ul li a:hover {
+      text-decoration: underline;
+    }
+
+    .status {
+      color: #333;
+      font-size: 14px;
+      margin-left: 10px;
+    }
+
+    p {
+      font-size: 16px;
+      margin: 10px 0;
+    }
+
+    /* Empty State Styling */
+    .empty-state {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+  </style>
+
+  <h2>Task Dashboard</h2>
+
+  <!-- Section for tasks created by the user -->
+  <h3>Tasks Created by You</h3>
+  {% if created_tasks %}
+    <ul>
+      {% for task in created_tasks %}
+        <li>
+          <!-- Display Task ID for tasks created by the user -->
+          <a href="{% url 'task_detail' task.task_id %}">{{ task.task_id }}</a>
+          <span class="status">({{ task.status_update_assignee }})</span> <!-- Show current status -->
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="empty-state">You haven't created any tasks.</p>
+  {% endif %}
+
+  <!-- Section for tasks assigned to the user -->
+  <h3>Your Assigned Tasks</h3>
+  {% if assigned_tasks %}
+    <ul>
+      {% for task in assigned_tasks %}
+        <li>
+          <!-- Display Task ID for tasks assigned to the user -->
+          <a href="{% url 'task_detail' task.task_id %}">{{ task.task_id }}</a>
+          <span class="status">({{ task.status_update_assignee }})</span> <!-- Show current status -->
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="empty-state">No tasks have been assigned to you.</p>
+  {% endif %}
+
+{% endblock %}

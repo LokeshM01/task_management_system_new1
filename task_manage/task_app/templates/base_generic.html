@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Task Management System{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'task_app/styles.css' %}">
+</head>
+<body>
+    <div class="header">
+        <h1>Task Management System</h1>
+
+        <div class="navbar">
+            {% if user.is_authenticated %}
+                <a href="{% url 'create_task' %}">Create Task</a>
+                <a href="{% url 'profile' %}">Profile</a>
+                <a href="{% url 'logout' %}">Logout</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Task Management System</p>
+    </footer>
+</body>
+</html>

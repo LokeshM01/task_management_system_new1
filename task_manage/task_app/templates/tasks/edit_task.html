@@ -1,0 +1,82 @@
+<!-- task_app/templates/tasks/edit_task.html -->
+
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <style>
+    /* Inline CSS for Edit Task Page */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    h2 {
+      color: #4CAF50;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .form-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    form {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #1ABC9C;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #16A085;
+    }
+
+    /* Navbar Styling */
+    .navbar a {
+      margin-right: 15px;
+      color: white;
+      padding: 8px 12px;
+      background-color: #34495E;  /* Same color as in task details */
+      text-decoration: none;
+      border-radius: 4px;
+    }
+
+    .navbar a:hover {
+      background-color: #1ABC9C;  /* Same hover color as in task details */
+    }
+  </style>
+
+  <h2>Edit Task: {{ task.task_id }}</h2>
+
+  <div class="form-container">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Save Changes</button>
+    </form>
+  </div>
+{% endblock %}

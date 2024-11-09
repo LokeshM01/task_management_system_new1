@@ -1,0 +1,85 @@
+<!-- task_app/templates/tasks/update_task_status.html -->
+
+{% extends 'base_generic.html' %}
+
+{% block content %}
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    h2 {
+      color: #4CAF50;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-weight: bold;
+      margin-bottom: 5px;
+      display: inline-block;
+    }
+
+    .btn {
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #45a049;
+    }
+
+    a {
+      color: #1ABC9C;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+
+  <h2>Update Task: {{ task.task_id }}</h2>
+  
+  <!-- Task Status Update Form -->
+  <form method="post">
+    {% csrf_token %}
+
+    <!-- Task Status Update Assignor -->
+    <div class="form-group">
+      <label for="id_status_update_assignor">Status Update (Assignor):</label>
+      {{ form.status_update_assignor }} <!-- Assignor status dropdown -->
+    </div>
+
+    <!-- Task Status Update Assignee -->
+    <div class="form-group">
+      <label for="id_status_update_assignee">Status Update (Assignee):</label>
+      {{ form.status_update_assignee }} <!-- Assignee status dropdown -->
+    </div>
+
+    <!-- Comments Form -->
+    <div class="form-group">
+      <label for="id_comments_by_assignee">Add Comments:</label>
+      {{ comment_form.comments_by_assignee }}  <!-- Comment text area -->
+    </div>
+    
+    <!-- Submit Button -->
+    <button type="submit" class="btn">Submit Updates</button>
+  </form>
+
+  <a href="{% url 'task_detail' task.task_id %}">Back to Task Detail</a>
+
+{% endblock %}
