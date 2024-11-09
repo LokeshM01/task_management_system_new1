@@ -11,20 +11,23 @@ from django.http import JsonResponse
 
 @login_required
 def home(request):
-    # Get the user's profile
     user_profile = UserProfile.objects.get(user=request.user)
 
-    # Check if the user is a Departmental Manager
     if user_profile.category == 'Departmental Manager':
-        # Get all tasks associated with the manager's department
-        tasks = Task.objects.filter(department=user_profile.department)
-        
-        # Get unique functional categories
-        functional_categories = Task.FUNCTIONAL_CATEGORIES  # Assuming FUNCTIONAL_CATEGORIES is defined in Task
+        # Fetch all tasks related to the department of the manager
+        department = user_profile.department
+        tasks = Task.objects.filter(
+            # Tasks created by members of the manager's department
+            Q(assigned_by__userprofile__department=department) |
+            # Tasks assigned to members of the manager's department
+            Q(assigned_to__userprofile__department=department)
+        )
+        return render(request, 'tasks/home.html', {
+            'tasks': tasks,
+            'departments': Department.objects.all(),
+            'functional_categories': Task.FUNCTIONAL_CATEGORIES,
+        })
 
-        return render(request, 'tasks/home.html', {'tasks': tasks, 'functional_categories': functional_categories})
-
-    # Redirect non-departmental managers to their assigned tasks page
     return redirect('assigned_to_me')
 
 @login_required
