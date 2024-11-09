@@ -1,11 +1,166 @@
-<!-- templates/tasks/user_profile.html -->
 {% extends 'base_generic.html' %}
+{% load static %}
 
 {% block content %}
-<h2>User Profile</h2>
-<p><strong>Name:</strong> {{ request.user.username }}</p>
-<p><strong>Email:</strong> {{ request.user.email }}</p>
-<p><strong>Role:</strong> {{ user_profile.category }}</p>
-<p><strong>Department:</strong> {{ user_profile.department.name }}</p>
-<a href="{% url 'logout' %}">Logout</a>
+<div class="profile-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Task Management System</h2>
+        <ul>
+            {% if user.userprofile.category == "Departmental Manager" %}
+                <li><a href="{% url 'home' %}">Home</a></li>
+            {% endif %}
+            <li><a href="{% url 'assigned_to_me' %}">Assigned To Me</a></li>
+            <li><a href="{% url 'assigned_by_me' %}">Assigned By Me</a></li>
+            <li><a href="{% url 'user_profile' %}" class="active">User Profile</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="profile-content">
+        <h1>Good Morning, {{ request.user.first_name }}!</h1>
+        <div class="profile-details">
+            <div class="profile-item">
+                <img src="{% static 'task_app/images/user-icon.png' %}" alt="User Icon" class="icon">
+                <p><strong>{{ request.user.get_full_name }}</strong></p>
+            </div>
+            <div class="profile-item">
+                <img src="{% static 'task_app/images/email-icon.png' %}" alt="Email Icon" class="icon">
+                <p>{{ request.user.email }}</p>
+            </div>
+            <div class="profile-item">
+                <img src="{% static 'task_app/images/team-icon.png' %}" alt="Role Icon" class="icon">
+                <p>{{ user_profile.category }}</p>
+            </div>
+            <div class="logout-btn">
+                <a href="{% url 'logout' %}">Log Out</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inline CSS for User Profile Page -->
+<style>
+    .profile-container {
+        display: flex;
+        font-family: Arial, sans-serif;
+        height: 100vh;
+    }
+
+    /* Sidebar Styling */
+    .sidebar {
+        background-color: #f4f4f9;
+        color: #333;
+        width: 250px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar h2 {
+        font-size: 22px;
+        color: #4CAF50; /* Green Theme */
+        margin-bottom: 20px;
+    }
+
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .sidebar ul li {
+        margin: 15px 0;
+    }
+
+    .sidebar ul li a {
+        text-decoration: none;
+        color: #333;
+        font-size: 18px;
+        display: block;
+        padding: 10px;
+        border-radius: 8px;
+        transition: background-color 0.3s;
+    }
+
+    .sidebar ul li a.active, .sidebar ul li a:hover {
+        background-color: #4CAF50; /* Green Theme */
+        color: #fff;
+    }
+
+    /* Main Profile Content Styling */
+    .profile-content {
+        
+        flex: 1;
+        padding: 40px;
+        background-color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .profile-content h1 {
+        font-size: 26px;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .profile-details {
+        margin-bottom: 248px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+        background-color: #f9f9f9;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .profile-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-size: 18px;
+        color: #333;
+    }
+
+    .profile-item p {
+        margin: 0;
+        font-size: 16px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e0f2f1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+    }
+
+    .logout-btn a {
+        display: inline-block;
+        padding: 12px 20px;
+        background-color: #4CAF50; /* Green Theme */
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 18px;
+        margin-top: 30px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .logout-btn a:hover {
+        background-color: #388E3C; /* Darker Green */
+    }
+</style>
+
 {% endblock %}

@@ -1,13 +1,244 @@
-<!-- templates/tasks/assigned_to_me.html -->
 {% extends 'base_generic.html' %}
+{% load static %}
 
 {% block content %}
-<h2>Tasks Assigned to Me</h2>
-<ul>
-  {% for task in tasks %}
-    <li>{{ task.task_summary }} - <a href="{% url 'task_detail' task.task_id %}">View Details</a></li>
-  {% empty %}
-    <li>No tasks assigned to you.</li>
-  {% endfor %}
-</ul>
+<div class="task-manager-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Task Management System</h2>
+        <ul>
+            {% if user.userprofile.category == "Departmental Manager" %}
+                <li><a href="{% url 'home' %}">Home</a></li>
+            {% endif %}
+            <li><a href="{% url 'assigned_to_me' %}" class="active">Assigned To Me</a></li>
+            <li><a href="{% url 'assigned_by_me' %}">Assigned By Me</a></li>
+            <li><a href="{% url 'user_profile' %}">User Profile</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1>Good Morning, {{ request.user.username }}!</h1>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <label>Filter By:</label>
+
+            <!-- Priority Filter -->
+            <select id="priorityFilter">
+                <option value="">Priority</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+                <option value="Urgent">Urgent</option>
+            </select>
+
+            <!-- Status Filter -->
+            <select id="statusFilter">
+                <option value="">Status</option>
+                <option value="Not Started">Not Started</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+                <option value="Stalled">Stalled</option>
+                <option value="Cancelled">Cancelled</option>
+            </select>
+
+            <!-- Functional Category Filter (Department) -->
+            <select id="departmentFilter">
+                <option value="">Department</option>
+                {% for code, label in functional_categories %}
+                <option value="{{ label }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- Deadline Filter -->
+            <input type="date" id="deadlineFilter">
+            <button class="filter-btn" onclick="filterTable()">Filter</button>
+        </div>
+
+        <!-- Task Table -->
+        <div class="task-table">
+            <table id="taskTable">
+                <thead>
+                    <tr>
+                        <th>Keyword</th>
+                        <th>Subject</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Department</th>
+                        <th>Deadline</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                        <tr>
+                            <td>{{ task.task_id }}</td>
+                            <td>{{ task.task_summary }}</td>
+                            <td>{{ task.get_task_category_priority_display }}</td>
+                            <td>{{ task.status_update_assignee }}</td>
+                            <td>{{ task.task_category_functional }}</td>
+                            <td>{{ task.deadline }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6">No tasks assigned to you.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Inline CSS for Assigned To Me Page with Green Theme -->
+<style>
+    .task-manager-container {
+        display: flex;
+        height: 100vh;
+        font-family: Arial, sans-serif;
+    }
+
+    .sidebar {
+        background-color: #f4f4f9;
+        color: #333;
+        width: 250px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .sidebar h2 {
+        font-size: 22px;
+        color: #4CAF50; /* Green */
+    }
+
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .sidebar ul li {
+        margin: 15px 0;
+    }
+
+    .sidebar ul li a {
+        text-decoration: none;
+        color: #333;
+        font-size: 18px;
+        display: block;
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    .sidebar ul li a.active, .sidebar ul li a:hover {
+        background-color: #4CAF50; /* Green */
+        color: #fff;
+    }
+
+    .main-content {
+        flex: 1;
+        padding: 20px;
+    }
+
+    .header h1 {
+        font-size: 24px;
+        color: #333;
+    }
+
+    .filter-section {
+        margin-top: 20px;
+    }
+
+    .filter-section label {
+        font-weight: bold;
+        margin-right: 10px;
+    }
+
+    .filter-section select, .filter-section button, .filter-section input[type="date"] {
+        padding: 8px;
+        margin-right: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    .filter-btn {
+        background-color: #4CAF50; /* Green */
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    .filter-btn:hover {
+        background-color: #388E3C; /* Darker Green */
+    }
+
+    .task-table {
+        margin-top: 20px;
+    }
+
+    .task-table table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .task-table th, .task-table td {
+        padding: 12px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+
+    .task-table th {
+        background-color: #f4f4f9;
+        color: #333;
+    }
+
+    .task-table td {
+        background-color: #fff;
+        color: #333;
+    }
+
+    .task-table tr:hover td {
+        background-color: #E8F5E9; /* Light Green */
+    }
+</style>
+
+<!-- Inline JavaScript for Filtering -->
+<script>
+    function filterTable() {
+        const priorityFilter = document.getElementById('priorityFilter').value.toLowerCase();
+        const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+        const departmentFilter = document.getElementById('departmentFilter').value.toLowerCase();
+        const deadlineFilter = document.getElementById('deadlineFilter').value;
+
+        const table = document.getElementById('taskTable');
+        const rows = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < rows.length; i++) {
+            const cells = rows[i].getElementsByTagName('td');
+            if (cells.length > 0) {
+                const priority = cells[2].innerText.toLowerCase();
+                const status = cells[3].innerText.toLowerCase();
+                const department = cells[4].innerText.toLowerCase();
+                const deadline = cells[5].innerText;
+
+                let displayRow = true;
+
+                if (priorityFilter && priority !== priorityFilter) displayRow = false;
+                if (statusFilter && status !== statusFilter) displayRow = false;
+                if (departmentFilter && department !== departmentFilter) displayRow = false;
+
+                if (deadlineFilter) {
+                    const deadlineDate = new Date(deadline);
+                    const selectedDate = new Date(deadlineFilter);
+                    if (deadlineDate.getTime() !== selectedDate.getTime()) {
+                        displayRow = false;
+                    }
+                }
+
+                rows[i].style.display = displayRow ? '' : 'none';
+            }
+        }
+    }
+</script>
 {% endblock %}

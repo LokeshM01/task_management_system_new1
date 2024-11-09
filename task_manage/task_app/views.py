@@ -29,15 +29,31 @@ def home(request):
 
 @login_required
 def assigned_to_me(request):
-    # Display tasks assigned to the current user
+    # Filter tasks where the assigned_to field matches the current user
     tasks = Task.objects.filter(assigned_to=request.user)
-    return render(request, 'tasks/assigned_to_me.html', {'tasks': tasks})
+
+    # Passing task category functional choices (department in this case) for filtering
+    functional_categories = Task.FUNCTIONAL_CATEGORIES  # Assuming Task.FUNCTIONAL_CATEGORIES holds department choices
+
+    # Render the template with the tasks and functional categories
+    return render(request, 'tasks/assigned_to_me.html', {
+        'tasks': tasks,
+        'functional_categories': functional_categories
+    })
 
 @login_required
 def assigned_by_me(request):
-    # Display tasks created/assigned by the current user
+    # Fetch tasks where the logged-in user is the assigner
     tasks = Task.objects.filter(assigned_by=request.user)
-    return render(request, 'tasks/assigned_by_me.html', {'tasks': tasks})
+
+    # Passing task category functional choices (department in this case) for filtering
+    functional_categories = Task.FUNCTIONAL_CATEGORIES  # Assuming Task.FUNCTIONAL_CATEGORIES holds department choices
+
+    # Render the template with the tasks and functional categories
+    return render(request, 'tasks/assigned_by_me.html', {
+        'tasks': tasks,
+        'functional_categories': functional_categories
+    })
 
 @login_required
 def user_profile(request):
