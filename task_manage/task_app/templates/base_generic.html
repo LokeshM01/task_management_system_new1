@@ -9,21 +9,22 @@
 </head>
 <body>
     <div class="header">
-        <h1>Task Management System</h1>
+        <h2>Task Management System</h2>
 
         <div class="navbar">
             {% if user.is_authenticated %}
                 <!-- Display "Home" link only for Departmental Managers -->
-                {% if user_category == 'Departmental Manager' %}
+                <!-- {% if user_category == 'Departmental Manager' %}
                     <a href="{% url 'home' %}">Home</a>
                 {% endif %}
                 <a href="{% url 'assigned_to_me' %}">Assigned to Me</a>
                 <a href="{% url 'assigned_by_me' %}">Assigned by Me</a>
                 <a href="{% url 'create_task' %}">Create Task</a>
                 <a href="{% url 'user_profile' %}">Profile</a>
-                <a href="{% url 'logout' %}">Logout</a>
+                <a href="{% url 'logout' %}">Logout</a> -->
             {% endif %}
         </div>
+        
     </div>
 
     <div class="container">
