@@ -1,0 +1,13 @@
+<!-- templates/tasks/assigned_by_me.html -->
+{% extends 'base_generic.html' %}
+
+{% block content %}
+<h2>Tasks Assigned by Me</h2>
+<ul>
+  {% for task in tasks %}
+    <li>{{ task.task_summary }} - <a href="{% url 'task_detail' task.task_id %}">View Details</a></li>
+  {% empty %}
+    <li>No tasks assigned by you.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

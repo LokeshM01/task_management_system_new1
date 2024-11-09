@@ -51,7 +51,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-LOGIN_REDIRECT_URL = '/tasks/create/'
+LOGIN_REDIRECT_URL = '/tasks/dashboard/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 ROOT_URLCONF = 'task_manage.urls'
@@ -67,6 +67,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'task_app.context_processors.user_category',
             ],
         },
     },

@@ -10,14 +10,41 @@ from datetime import datetime, timedelta
 from django.http import JsonResponse
 
 @login_required
+def home(request):
+    # Display tasks assigned to the Departmental Manager's team
+    user_profile = UserProfile.objects.get(user=request.user)
+    if user_profile.category == 'Departmental Manager':
+        # Fetch tasks based on department or any specific criteria
+        tasks = Task.objects.filter(department=user_profile.department)
+        return render(request, 'tasks/home.html', {'tasks': tasks})
+    return redirect('assigned_to_me')
+
+@login_required
+def assigned_to_me(request):
+    # Display tasks assigned to the current user
+    tasks = Task.objects.filter(assigned_to=request.user)
+    return render(request, 'tasks/assigned_to_me.html', {'tasks': tasks})
+
+@login_required
+def assigned_by_me(request):
+    # Display tasks created/assigned by the current user
+    tasks = Task.objects.filter(assigned_by=request.user)
+    return render(request, 'tasks/assigned_by_me.html', {'tasks': tasks})
+
+@login_required
+def user_profile(request):
+    # Display user profile details
+    user_profile = UserProfile.objects.get(user=request.user)
+    return render(request, 'tasks/user_profile.html', {'user_profile': user_profile})
+
+@login_required
 def view_system_logs(request):
     # Placeholder for viewing system logs
     logs = ["Error 1: Task sync issue.", "Error 2: User permissions mismatch."]
-    
     return render(request, 'tasks/system_logs.html', {'logs': logs})
 
 def custom_403_view(request, exception=None):
-    """Custom 403 Forbidden view to show a custom access denied message."""
+    # Custom 403 Forbidden view to show a custom access denied message
     return render(request, '403.html', status=403)
 
 @login_required
@@ -28,36 +55,31 @@ def task_list(request):
     """
     user_profile = UserProfile.objects.get(user=request.user)
 
-    # If user is a Task Management System Manager, provide full access with filters
     if user_profile.category == 'Task Management System Manager':
         tasks = Task.objects.all()  # Start with all tasks
 
-        # Apply department filter if provided
+        # Apply filters if provided
         department_id = request.GET.get('department')
         if department_id:
             tasks = tasks.filter(department_id=department_id)
 
-        # Apply person filter (Assignee or Assignor) if provided
         person_id = request.GET.get('person')
         if person_id:
             tasks = tasks.filter(Q(assigned_by_id=person_id) | Q(assigned_to_id=person_id))
 
-        # Apply ageing filter for tasks open for certain days or delayed
         ageing_days = request.GET.get('ageing_days')
         if ageing_days:
             today = datetime.today().date()
-            if ageing_days == 'overdue':  # For overdue tasks beyond their deadline
+            if ageing_days == 'overdue':
                 tasks = tasks.filter(deadline__lt=today, status_update_assignee__in=['Not Started', 'In Progress'])
-            else:  # For tasks open for a specific number of days
+            else:
                 ageing_days = int(ageing_days)
                 tasks = tasks.filter(assigned_date__lte=today - timedelta(days=ageing_days))
 
-        # Apply task status filter if provided
         status = request.GET.get('status')
         if status:
             tasks = tasks.filter(status_update_assignee=status)
 
-        # Get departments, users, and status choices for filter options in the template
         departments = Department.objects.all()
         users = UserProfile.objects.filter(user__is_active=True)
         status_choices = TaskForm.STATUS_CHOICES
@@ -69,76 +91,12 @@ def task_list(request):
             'status_choices': status_choices,
         })
 
-    # For non-Task Management System Managers, show only their created or assigned tasks
     else:
-        created_tasks = Task.objects.filter(assigned_by=request.user)  # Tasks created by the user
-        assigned_tasks = Task.objects.filter(assigned_to=request.user)  # Tasks assigned to the user
+        created_tasks = Task.objects.filter(assigned_by=request.user)
+        assigned_tasks = Task.objects.filter(assigned_to=request.user)
         return render(request, 'tasks/task_list.html', {
             'created_tasks': created_tasks,
             'assigned_tasks': assigned_tasks,
-        })
-
-@login_required
-def profile(request):
-    user_profile = UserProfile.objects.get(user=request.user)
-
-    if user_profile.category == 'Task Management System Manager':
-        # Fetch all tasks, departments, and users
-        all_tasks = Task.objects.all()
-        all_users = UserProfile.objects.select_related('user').all()  # Ensuring 'user' field is accessible
-        departments = Department.objects.all()
-
-        # Get filter values from the GET request
-        department_filter = request.GET.get('department')
-        person_filter = request.GET.get('person')
-        ageing_days_filter = request.GET.get('ageing_days')
-        status_filter = request.GET.get('status')
-
-        # Apply filters if specified
-        if department_filter:
-            all_tasks = all_tasks.filter(department__id=department_filter)
-
-        if person_filter:
-            all_tasks = all_tasks.filter(Q(assigned_to__id=person_filter) | Q(assigned_by__id=person_filter))
-
-        if ageing_days_filter:
-            if ageing_days_filter == 'overdue':
-                all_tasks = all_tasks.filter(deadline__lt=timezone.now())
-            else:
-                days_open = int(ageing_days_filter)
-                all_tasks = all_tasks.filter(deadline__gte=timezone.now() - timedelta(days=days_open))
-
-        if status_filter:
-            all_tasks = all_tasks.filter(status_update_assignee=status_filter)
-
-        # Status choices for dropdown
-        status_choices = [
-            ('Not Started', 'Not Started'),
-            ('In Progress', 'In Progress'),
-            ('Completed', 'Completed'),
-            ('Stalled', 'Stalled'),
-            ('On-Hold', 'On-Hold'),
-            ('Cancelled', 'Cancelled'),
-        ]
-
-        # Pass all data to the template
-        return render(request, 'registration/profile.html', {
-            'all_tasks': all_tasks,
-            'all_users': all_users,
-            'departments': departments,
-            'status_choices': status_choices,
-            'is_manager': True,
-        })
-
-    else:
-        # For regular users, show tasks they created or are assigned to
-        created_tasks = Task.objects.filter(assigned_by=request.user)
-        assigned_tasks = Task.objects.filter(assigned_to=request.user)
-
-        return render(request, 'registration/profile.html', {
-            'created_tasks': created_tasks,
-            'assigned_tasks': assigned_tasks,
-            'is_manager': False,
         })
 
 @login_required
@@ -148,16 +106,12 @@ def create_task(request):
         if form.is_valid():
             task = form.save(commit=False)
             task.assigned_by = request.user
-            task.department = UserProfile.objects.get(user=task.assigned_to).department  # Set department based on assignee
+            task.department = UserProfile.objects.get(user=task.assigned_to).department
             task.save()
-
-            # Return JSON response for AJAX pop-up confirmation
             return JsonResponse({'message': 'Task created successfully!', 'task_id': task.task_id})
         else:
-            # Return JSON response with form errors
             return JsonResponse({'error': 'Form data is invalid', 'errors': form.errors}, status=400)
     else:
-        # If not a POST request, display the form as HTML
         form = TaskForm(user=request.user)
         return render(request, 'tasks/create_task.html', {'form': form})
 
@@ -190,27 +144,20 @@ def task_detail(request, task_id):
 @login_required
 def update_task_status(request, task_id):
     task = get_object_or_404(Task, task_id=task_id)
-
-    # Check that the current user is the assignee
     if task.assigned_to != request.user:
         raise PermissionDenied("Only the assignee can update this task.")
 
-    # Process form submission
     if request.method == 'POST':
         form = TaskStatusUpdateForm(request.POST, instance=task)
         comment_form = AssigneeCommentForm(request.POST, instance=task)
-
-        # Check if both forms are valid
         if form.is_valid() and comment_form.is_valid():
-            # Save only the deadline revision and comments from assignee
-            form.save()  # This will only save fields included in `TaskStatusUpdateForm`
-            comment_form.save()  # Saves the assignee's comment
+            form.save()
+            comment_form.save()
             return redirect('task_detail', task_id=task.task_id)
 
     else:
-        # For GET requests, provide the forms pre-filled with current task data
-        form = TaskStatusUpdateForm(instance=task)  # Form for revising the deadline
-        comment_form = AssigneeCommentForm(instance=task)  # Form for adding comments
+        form = TaskStatusUpdateForm(instance=task)
+        comment_form = AssigneeCommentForm(instance=task)
 
     return render(request, 'tasks/update_task_status.html', {
         'form': form,
@@ -220,15 +167,10 @@ def update_task_status(request, task_id):
 
 @login_required
 def mark_task_completed(request, task_id):
-    """
-    Allows only the creator of the task to mark it as completed.
-    """
     task = get_object_or_404(Task, task_id=task_id)
-
     if task.assigned_by != request.user:
         raise PermissionDenied("Only the creator can mark this task as completed.")
 
-    # Mark the task as completed
     task.status_update_assignor = 'Completed'
     task.status_update_assignee = 'Completed'
     task.save()
@@ -237,15 +179,10 @@ def mark_task_completed(request, task_id):
 
 @login_required
 def reassign_task(request, task_id):
-    """
-    Allows the assignee to reassign the task back to the creator.
-    """
     task = get_object_or_404(Task, task_id=task_id)
-
     if task.assigned_to != request.user:
         raise PermissionDenied("Only the assignee can reassign the task back to the creator.")
 
-    # Reassign the task to the original creator
     task.assigned_to = task.assigned_by
     task.save()
 
@@ -253,17 +190,11 @@ def reassign_task(request, task_id):
 
 @login_required
 def dashboard(request):
-    """
-    Redirect users to the appropriate page based on their role:
-    - Non-Management Staff -> Profile Page
-    - Others (e.g., Executive, Department Manager) -> Create Task Page
-    """
     user_profile = UserProfile.objects.get(user=request.user)
 
-    # Check the user's category and redirect accordingly
-    if user_profile.category == 'Non-Management':
-        # Non-Management Staff are redirected to their profile
-        return redirect('profile')
+    # Redirect based on user category
+    if user_profile.category == 'Departmental Manager':
+        return redirect('home')  # Redirect Departmental Managers to Home Page
     else:
-        # Executive and Department Managers are redirected to create a task
-        return redirect('create_task')
+        return redirect('assigned_to_me')  # Redirect other users to Assigned To Me Page
+

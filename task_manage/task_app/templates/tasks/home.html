@@ -1,0 +1,228 @@
+{% extends 'base_generic.html' %}
+{% load static %} <!-- Add this line to load the static files -->
+
+{% block content %}
+<div class="task-manager-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Task Management System</h2>
+        <ul>
+            <li><a href="{% url 'home' %}" class="active">Home</a></li>
+            <li><a href="{% url 'assigned_to_me' %}">Assigned To Me</a></li>
+            <li><a href="{% url 'assigned_by_me' %}">Assigned By Me</a></li>
+            <li><a href="{% url 'user_profile' %}">User Profile</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1>Good Morning, {{ request.user.username }}!</h1>
+            <div class="search-bar">
+                <input type="text" placeholder="Search...">
+                <button><img src="{% static 'task_app/images/search-icon.png' %}" alt="Search Icon"></button>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <label>Filter By:</label>
+            <select>
+                <option>Priority</option>
+                <option>High Priority</option>
+                <option>Medium Priority</option>
+                <option>Low Priority</option>
+            </select>
+            <select>
+                <option>Status</option>
+                <option>In Progress</option>
+                <option>Completed</option>
+                <option>On Hold</option>
+                <option>Cancelled</option>
+            </select>
+            <select>
+                <option>Department</option>
+                <option>Engineering</option>
+                <option>Content</option>
+                <option>Sales</option>
+            </select>
+            <select>
+                <option>Deadline</option>
+                <option>Today</option>
+                <option>This Week</option>
+                <option>This Month</option>
+            </select>
+            <button class="filter-btn">Filter</button>
+        </div>
+
+        <!-- Task Table -->
+        <div class="task-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Keyword</th>
+                        <th>Subject</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Department</th>
+                        <th>Deadline</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                        <tr>
+                            <td>{{ task.task_id }}</td>
+                            <td>{{ task.task_summary }}</td>
+                            <td>{{ task.get_task_category_priority_display }}</td>
+                            <td>{{ task.status_update_assignee }}</td>
+                            <td>{{ task.department.name }}</td>
+                            <td>{{ task.deadline }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6">No tasks available.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Inline CSS for Home Page with Green Theme -->
+<style>
+    /* Container */
+    .task-manager-container {
+        display: flex;
+        height: 100vh;
+        font-family: Arial, sans-serif;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        background-color: #f4f4f9;
+        color: #333;
+        width: 250px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .sidebar h2 {
+        font-size: 22px;
+        color: #4CAF50; /* Green */
+    }
+
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .sidebar ul li {
+        margin: 15px 0;
+    }
+
+    .sidebar ul li a {
+        text-decoration: none;
+        color: #333;
+        font-size: 18px;
+        display: block;
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    .sidebar ul li a.active, .sidebar ul li a:hover {
+        background-color: #4CAF50; /* Green */
+        color: #fff;
+    }
+
+    /* Main Content */
+    .main-content {
+        flex: 1;
+        padding: 20px;
+    }
+
+    .header h1 {
+        font-size: 24px;
+        color: #333;
+    }
+
+    .search-bar {
+        display: flex;
+        align-items: center;
+        margin-top: 10px;
+    }
+
+    .search-bar input[type="text"] {
+        padding: 8px;
+        width: 250px;
+        border: 1px solid #ccc;
+        border-radius: 5px 0 0 5px;
+    }
+
+    .search-bar button {
+        padding: 8px 12px;
+        background-color: #4CAF50; /* Green */
+        color: #fff;
+        border: none;
+        border-radius: 0 5px 5px 0;
+        cursor: pointer;
+    }
+
+    .filter-section {
+        margin-top: 20px;
+    }
+
+    .filter-section label {
+        font-weight: bold;
+        margin-right: 10px;
+    }
+
+    .filter-section select, .filter-section button {
+        padding: 8px;
+        margin-right: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    .filter-btn {
+        background-color: #4CAF50; /* Green */
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    .filter-btn:hover {
+        background-color: #388E3C; /* Darker Green */
+    }
+
+    /* Task Table */
+    .task-table {
+        margin-top: 20px;
+    }
+
+    .task-table table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .task-table th, .task-table td {
+        padding: 12px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+
+    .task-table th {
+        background-color: #f4f4f9;
+        color: #333;
+    }
+
+    .task-table td {
+        background-color: #fff;
+        color: #333;
+    }
+
+    .task-table tr:hover td {
+        background-color: #E8F5E9; /* Light Green */
+    }
+</style>
+{% endblock %}

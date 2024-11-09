@@ -1,0 +1,11 @@
+<!-- templates/tasks/user_profile.html -->
+{% extends 'base_generic.html' %}
+
+{% block content %}
+<h2>User Profile</h2>
+<p><strong>Name:</strong> {{ request.user.username }}</p>
+<p><strong>Email:</strong> {{ request.user.email }}</p>
+<p><strong>Role:</strong> {{ user_profile.category }}</p>
+<p><strong>Department:</strong> {{ user_profile.department.name }}</p>
+<a href="{% url 'logout' %}">Logout</a>
+{% endblock %}
