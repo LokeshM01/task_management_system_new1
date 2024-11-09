@@ -42,7 +42,12 @@ class Task(models.Model):
     #     ('Fixed', 'Fixed')  # If "Fixed" is a valid priority value
     # ]
 
-    PRIORITY_LEVELS = [(str(i), str(i)) for i in range(1, 10)]
+    PRIORITY_LEVELS = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('urgent', 'Urgent')
+    ]
 
     FUNCTIONAL_CATEGORIES = [
         ('Bug Fixing - Live', 'Bug Fixing - Live'),
