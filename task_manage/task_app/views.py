@@ -11,6 +11,8 @@ from django.http import JsonResponse
 from django.http import HttpResponse
 from .models import ActivityLog
 import csv
+import pandas as pd
+from django.db.models import Count
 
 @login_required
 def home(request):
@@ -243,10 +245,7 @@ def activity(request):
         'activity_logs': activity_logs
     })
 
-@login_required
-def metrics(request):
-    # Display metrics data
-    return render(request, 'tasks/metrics.html')
+
 
 @login_required
 def download_activity_log(request):
@@ -260,4 +259,66 @@ def download_activity_log(request):
     for log in logs:
         writer.writerow([log.user.username, log.get_action_display(), log.task.task_id, log.description, log.timestamp])
     
+    return response
+
+@login_required
+def metrics(request):
+    # Fetch metrics data based on department and time frame
+    now = timezone.now()
+    last_24_hours = now - timezone.timedelta(hours=24)
+
+    metrics_data = Task.objects.filter(assigned_date__gte=last_24_hours).values(
+    'department__name'
+    ).annotate(
+        tickets_raised=Count('id'),
+        tickets_received=Count('id', filter=Q(status__in=['In Progress', 'Not Started'])),  # Adjust based on 'received' criteria
+        tickets_closed=Count('id', filter=Q(status='Completed')),
+        tickets_cancelled=Count('id', filter=Q(status='Cancelled')),
+    ).order_by('department__name')
+
+    # Calculate open tickets as specified
+    for data in metrics_data:
+        data['open_tickets'] = data['tickets_raised'] + data['tickets_received'] - data['tickets_closed'] - data['tickets_cancelled']
+
+    # Total row for the table
+    total_raised = sum(d.get('tickets_raised', 0) for d in metrics_data)
+    total_received = sum(d.get('tickets_received', 0) for d in metrics_data)
+    total_closed = sum(d.get('tickets_closed', 0) for d in metrics_data)
+    total_cancelled = sum(d.get('tickets_cancelled', 0) for d in metrics_data)
+    total_open = sum(d.get('open_tickets', 0) for d in metrics_data)
+    
+    metrics_summary = {
+        'total_raised': total_raised,
+        'total_received': total_received,
+        'total_closed': total_closed,
+        'total_open': total_open,
+    }
+
+    # Return metrics data to the template
+    return render(request, 'tasks/metrics.html', {
+        'metrics_data': metrics_data,
+        'metrics_summary': metrics_summary,
+    })
+
+# Download metrics as a CSV file
+@login_required
+def download_metrics(request):
+    # Prepare data for CSV download
+    now = timezone.now()
+    last_24_hours = now - timezone.timedelta(hours=24)
+
+    metrics_data = Task.objects.filter(assigned_date__gte=last_24_hours).values(
+        'department__name'
+    ).annotate(
+        tickets_raised=Count('id'),
+        tickets_received=Count('id'),
+        tickets_closed=Count('id', filter=Q(status='Completed')),
+        open_tickets=Count('id', filter=Q(status='Open'))
+    ).order_by('department__name')
+
+    df = pd.DataFrame(metrics_data)
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="metrics.csv"'
+    df.to_csv(path_or_buf=response, index=False)
+
     return response

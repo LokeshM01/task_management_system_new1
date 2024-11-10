@@ -20,8 +20,8 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="header">
-            <h1>Ticket Metrics</h1>
-            <p>Overview of ticket activity in the last 24 hours, updated every 3 hours.</p>
+            <h1>Metrics</h1>
+            <p>Overview of tickets in the last 24 hours by department.</p>
         </div>
 
         <!-- Metrics Table -->
@@ -31,19 +31,29 @@
                     <tr>
                         <th>Department</th>
                         <th>Tickets Raised</th>
-                        <th>Tickets Closed</th>
                         <th>Tickets Received</th>
+                        <th>Tickets Closed</th>
+                        <th>Open Tickets</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for metric in metrics %}
+                    {% for data in metrics_data %}
                     <tr>
-                        <td>{{ metric.department }}</td>
-                        <td>{{ metric.tickets_raised }}</td>
-                        <td>{{ metric.tickets_closed }}</td>
-                        <td>{{ metric.tickets_received }}</td>
+                        <td>{{ data.department__name }}</td>
+                        <td>{{ data.tickets_raised }}</td>
+                        <td>{{ data.tickets_received }}</td>
+                        <td>{{ data.tickets_closed }}</td>
+                        <td>{{ data.open_tickets }}</td>
                     </tr>
                     {% endfor %}
+                    <!-- Total Row -->
+                    <tr class="total-row">
+                        <td><strong>Total</strong></td>
+                        <td>{{ metrics_summary.total_raised }}</td>
+                        <td>{{ metrics_summary.total_received }}</td>
+                        <td>{{ metrics_summary.total_closed }}</td>
+                        <td>{{ metrics_summary.total_open }}</td>
+                    </tr>
                 </tbody>
             </table>
             <button class="download-btn" onclick="window.location.href='{% url 'download_metrics' %}'">Download Metrics</button>
@@ -68,6 +78,8 @@
     .metrics-table th { background-color: #f4f4f9; color: #333; }
     .metrics-table td { background-color: #fff; color: #333; }
     .metrics-table tr:hover td { background-color: #E8F5E9; }
-    .download-btn { padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+    .metrics-table .total-row td { font-weight: bold; background-color: #f4f4f9; }
+    .download-btn { margin-top: 23px;padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+    .download-btn:hover { background-color: #388E3C; }
 </style>
 {% endblock %}

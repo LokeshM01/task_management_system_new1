@@ -24,6 +24,7 @@ urlpatterns = [
     path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('system_logs/', views.view_system_logs, name='view_system_logs'),
     path('activity/', views.activity, name='activity'),     # Activity page for Task Management System Managers
-    path('metrics/', views.metrics, name='metrics'),        # Metrics page for Task Management System Managers
+    path('metrics/', views.metrics, name='metrics'),
+    path('metrics/download/', views.download_metrics, name='download_metrics'),
     path('download_activity_log/', views.download_activity_log, name='download_activity_log'),  # New URL for download
 ]
