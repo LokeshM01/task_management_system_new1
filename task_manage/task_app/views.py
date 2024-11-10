@@ -129,6 +129,7 @@ def task_list(request):
 @login_required
 def create_task(request):
     if request.method == 'POST':
+        print("Form data received:", request.POST)
         form = TaskForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             task = form.save(commit=False)
@@ -136,6 +137,7 @@ def create_task(request):
             task.save()
             return JsonResponse({'message': 'Task created successfully!', 'task_id': task.task_id})
         else:
+            print("Form errors:", form.errors)  # Log form errors
             return JsonResponse({'error': 'Form data is invalid', 'errors': form.errors}, status=400)
     else:
         form = TaskForm(user=request.user)
