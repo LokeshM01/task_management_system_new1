@@ -1,117 +1,146 @@
 {% extends "base_generic.html" %}
+{% load static %}
 
 {% block content %}
-<h2>Create a Task</h2>
-<hr>
+<div class="task-manager-container">
+    <!-- Home Icon to Redirect to Home Page -->
+    <div class="home-icon">
+        <a href="{% url 'home' %}">
+            <img src="{% static 'task_app/images/home-icon.svg' %}" alt="Home" class="icon">
+        </a>
+    </div>
 
-<div class="form-container">
-    <form method="post" enctype="multipart/form-data" id="createTaskForm">
-        {% csrf_token %}
+    <h2>Create a Task</h2>
+    <hr>
 
-        <!-- Assigned By (Disabled) -->
-        <div class="form-group">
-            <label for="assigned_by">Assigned by:</label>
-            <select id="assigned_by" name="assigned_by" disabled>
-                <option selected>{{ request.user.username }}</option>
-            </select>
+    <div class="form-container">
+        <form method="post" enctype="multipart/form-data" id="createTaskForm">
+            {% csrf_token %}
+
+            <!-- Assigned By (Disabled) -->
+            <div class="form-group">
+                <label for="assigned_by">Assigned by:</label>
+                <select id="assigned_by" name="assigned_by" disabled>
+                    <option selected>{{ request.user.username }}</option>
+                </select>
+            </div>
+
+            <!-- Ticket Type -->
+            <div class="form-group">
+                <label for="ticket_type">Ticket Type:</label>
+                <select id="ticket_type" name="ticket_type">
+                    <option value="Bug Fixing - Live">Bug Fixing - Live</option>
+                    <option value="Bug Fixing - Staging">Bug Fixing - Staging</option>
+                    <option value="Hardware">Hardware</option>
+                    <option value="Issues">Issues</option>
+                    <option value="New Engineering Requirement">New Engineering Requirement</option>
+                    <option value="Publishing">Publishing</option>
+                    <option value="Research">Research</option>
+                    <option value="Attendance">Attendance</option>
+                    <option value="Sales">Sales</option>
+                    <option value="Service">Service</option>
+                    <option value="Testing">Testing</option>
+                    <option value="Others">Others</option>
+                </select>
+            </div>
+
+            <!-- Priority -->
+            <div class="form-group">
+                <label for="priority">Priority:</label>
+                <select id="priority" name="priority">
+                    <option value="High Priority">High Priority</option>
+                    <option value="Low Priority">Low Priority</option>
+                    <option value="Medium Priority">Medium Priority</option>
+                    <option value="Urgent">Urgent</option>
+                </select>
+            </div>
+
+            <!-- Department -->
+            <div class="form-group">
+                <label for="department">Department:</label>
+                <select id="department" name="department">
+                    <option value="Engineering Team">Engineering Team</option>
+                    <option value="Product Team">Product Team</option>
+                    <option value="Sales Team">Sales Team</option>
+                    <option value="Content Team">Content Team</option>
+                    <option value="Customer Support">Customer Support</option>
+                    <option value="HR">HR</option>
+                    <option value="Non Management Staff">Non Management Staff</option>
+                    <option value="Publishing Team">Publishing Team</option>
+                    <option value="Help Desk">Help Desk</option>
+                    <option value="Executive Managers">Executive Managers</option>
+                </select>
+            </div>
+
+            <!-- Assigned To -->
+            <div class="form-group">
+                <label for="assigned_to">Assigned to:</label>
+                <select id="assigned_to" name="assigned_to">
+                    {% for user in users %}
+                        <option value="{{ user.id }}">{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Deadline -->
+            <div class="form-group">
+                <label for="deadline">Deadline:</label>
+                <input type="date" id="deadline" name="deadline">
+            </div>
+
+            <!-- Subject -->
+            <div class="form-group full-width">
+                <label for="subject">Subject:</label>
+                <input type="text" id="subject" name="subject" required>
+            </div>
+
+            <!-- Request Details (Rich Text Editor) -->
+            <div class="form-group full-width">
+                <label for="request_details">Request details:</label>
+                <textarea id="request_details" name="request_details" rows="4"></textarea>
+            </div>
+
+            <!-- Attach File -->
+            <div class="form-group">
+                <label for="attach_file">Attach File:</label>
+                <input type="file" id="attach_file" name="attach_file" accept=".pdf,.ppt,.pptx,.doc,.docx,.mp4,.jpg,.png,.jpeg">
+            </div>
+
+            <!-- Create Task Button -->
+            <button type="submit" class="submit-btn">Create Task</button>
+        </form>
+    </div>
+
+    <!-- Success Popup -->
+    <div id="successPopup" class="popup">
+        <div class="popup-content">
+            <p>Task created successfully!</p>
+            <button onclick="closePopup()">✖</button>
         </div>
-
-        <!-- Ticket Type -->
-        <div class="form-group">
-            <label for="ticket_type">Ticket Type:</label>
-            <select id="ticket_type" name="ticket_type">
-                <option value="Bug Fixing - Live">Bug Fixing - Live</option>
-                <option value="Bug Fixing - Staging">Bug Fixing - Staging</option>
-                <option value="Hardware">Hardware</option>
-                <option value="Issues">Issues</option>
-                <option value="New Engineering Requirement">New Engineering Requirement</option>
-                <option value="Publishing">Publishing</option>
-                <option value="Research">Research</option>
-                <option value="Attendance">Attendance</option>
-                <option value="Sales">Sales</option>
-                <option value="Service">Service</option>
-                <option value="Testing">Testing</option>
-                <option value="Others">Others</option>
-            </select>
-        </div>
-
-        <!-- Priority -->
-        <div class="form-group">
-            <label for="priority">Priority:</label>
-            <select id="priority" name="priority">
-                <option value="High Priority">High Priority</option>
-                <option value="Low Priority">Low Priority</option>
-                <option value="Medium Priority">Medium Priority</option>
-                <option value="Urgent">Urgent</option>
-            </select>
-        </div>
-
-        <!-- Department -->
-        <div class="form-group">
-            <label for="department">Department:</label>
-            <select id="department" name="department">
-                <option value="Engineering Team">Engineering Team</option>
-                <option value="Product Team">Product Team</option>
-                <option value="Sales Team">Sales Team</option>
-                <option value="Content Team">Content Team</option>
-                <option value="Customer Support">Customer Support</option>
-                <option value="HR">HR</option>
-                <option value="Non Management Staff">Non Management Staff</option>
-                <option value="Publishing Team">Publishing Team</option>
-                <option value="Help Desk">Help Desk</option>
-                <option value="Executive Managers">Executive Managers</option>
-            </select>
-        </div>
-
-        <!-- Assigned To -->
-        <div class="form-group">
-            <label for="assigned_to">Assigned to:</label>
-            <select id="assigned_to" name="assigned_to">
-                {% for user in users %}
-                    <option value="{{ user.id }}">{{ user.username }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <!-- Deadline -->
-        <div class="form-group">
-            <label for="deadline">Deadline:</label>
-            <input type="date" id="deadline" name="deadline">
-        </div>
-
-        <!-- Subject -->
-        <div class="form-group full-width">
-            <label for="subject">Subject:</label>
-            <input type="text" id="subject" name="subject" required>
-        </div>
-
-        <!-- Request Details (Rich Text Editor) -->
-        <div class="form-group full-width">
-            <label for="request_details">Request details:</label>
-            <textarea id="request_details" name="request_details" rows="4"></textarea>
-        </div>
-
-        <!-- Attach File -->
-        <div class="form-group">
-            <label for="attach_file">Attach File:</label>
-            <input type="file" id="attach_file" name="attach_file" accept=".pdf,.ppt,.pptx,.doc,.docx,.mp4,.jpg,.png,.jpeg">
-        </div>
-
-        <!-- Create Task Button -->
-        <button type="submit" class="submit-btn">Create Task</button>
-    </form>
-</div>
-
-<!-- Success Popup -->
-<div id="successPopup" class="popup">
-    <div class="popup-content">
-        <p>Task created successfully!</p>
-        <button onclick="closePopup()">✖</button>
     </div>
 </div>
 
 <!-- Inline CSS for styling -->
 <style>
+    .task-manager-container {
+        position: relative;
+    }
+
+    /* Home Icon styling */
+    .home-icon {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+    }
+
+    .home-icon img.icon {
+      margin-top: -23px;
+      width: 52px;
+      height: 47px;
+      cursor: pointer;
+      filter: brightness(0) saturate(100%) invert(40%) sepia(80%) saturate(300%) hue-rotate(70deg) brightness(90%) contrast(100%);
+    }
+
     .form-container {
         background-color: #ffffff;
         padding: 20px;

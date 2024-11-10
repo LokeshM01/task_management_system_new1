@@ -44,12 +44,12 @@
                 </select>
 
                 <!-- Functional Category Filter (Department) -->
-            <select id="departmentFilter">
-                <option value="">Department</option>
-                {% for code, label in functional_categories %}
-                <option value="{{ label }}">{{ label }}</option>
-                {% endfor %}
-            </select>
+                <select id="departmentFilter">
+                    <option value="">Department</option>
+                    {% for code, label in functional_categories %}
+                    <option value="{{ label }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
 
                 <!-- Deadline Filter -->
                 <input type="date" id="deadlineFilter">
@@ -76,7 +76,8 @@
                 <tbody>
                     {% for task in tasks %}
                         <tr>
-                            <td>{{ task.task_id }}</td>
+                            <!-- Link in Keyword Column -->
+                            <td><a href="{% url 'task_detail' task.task_id %}">{{ task.task_id }}</a></td>
                             <td>{{ task.task_summary }}</td>
                             <td>{{ task.get_task_category_priority_display }}</td>
                             <td>{{ task.status_update_assignee }}</td>
@@ -200,6 +201,7 @@
 
     .task-table {
         margin-top: 20px;
+        width: 100%;
     }
 
     .task-table table {

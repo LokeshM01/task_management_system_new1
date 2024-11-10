@@ -14,7 +14,7 @@ urlpatterns = [
     path('assigned_to_me/', views.assigned_to_me, name='assigned_to_me'),  # Tickets assigned to the user
     path('assigned_by_me/', views.assigned_by_me, name='assigned_by_me'),  # Tickets assigned by the user
     path('user_profile/', views.user_profile, name='user_profile'),        # User Profile page
-
+    path('reassign/<str:task_id>/', views.reassign_task, name='reassign_task'),
     # Existing paths
     path('create/', views.create_task, name='create_task'),
     path('edit/<str:task_id>/', views.edit_task, name='edit_task'),

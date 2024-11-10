@@ -79,7 +79,7 @@
                 <tbody>
                     {% for task in tasks %}
                         <tr>
-                            <td>{{ task.task_id }}</td>
+                            <td><a href="{% url 'task_detail' task.task_id %}">{{ task.task_id }}</a></td>
                             <td>{{ task.task_summary }}</td>
                             <td>{{ task.get_task_category_priority_display }}</td>
                             <td>{{ task.status_update_assignee }}</td>
