@@ -62,17 +62,13 @@ class Task(models.Model):
     assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='tasks_assigned')
     assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='tasks_received')
     assigned_date = models.DateTimeField(auto_now_add=True)
-    deadline = models.DateField()
-    revised_completion_date = models.DateField(null=True, blank=True)
-    reasons_for_revision = models.TextField(null=True, blank=True)
-    task_summary = models.TextField()
-    supporting_files = models.FileField(upload_to='supporting_files/', null=True, blank=True)
-    task_category_functional = models.CharField(max_length=50, choices=FUNCTIONAL_CATEGORIES, default='Others')
-    task_category_priority = models.CharField(max_length=10, choices=PRIORITY_LEVELS, default='medium')
-    status_update_assignor = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Not Started')
-    status_update_assignee = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Not Started')
-    comments_by_manager = models.TextField(null=True, blank=True)
-    comments_by_assignee = models.TextField(null=True, blank=True)
+    deadline = models.DateField()  # Ensure this field is included
+    ticket_type = models.CharField(max_length=100, choices=FUNCTIONAL_CATEGORIES)
+    priority = models.CharField(max_length=10, choices=PRIORITY_LEVELS)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Not Started')
+    subject = models.CharField(max_length=255)
+    request_details = models.TextField(blank=True, null=True)  # Previously comments_by_manager
+    attach_file = models.FileField(upload_to='attachments/', blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.task_id:

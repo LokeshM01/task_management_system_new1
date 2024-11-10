@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Task, UserProfile, Department
 from django.contrib.auth.decorators import login_required
-from .forms import TaskForm, TaskStatusUpdateForm
+from .forms import TaskForm
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -132,19 +132,14 @@ def create_task(request):
         form = TaskForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             task = form.save(commit=False)
-            task.assigned_by = request.user
-            task.department = UserProfile.objects.get(user=task.assigned_to).department  # Set department based on assignee
+            task.assigned_by = request.user  # Automatically set the assigned_by field
             task.save()
-
-            # Return JSON response for AJAX pop-up confirmation
             return JsonResponse({'message': 'Task created successfully!', 'task_id': task.task_id})
         else:
-            # Return JSON response with form errors
             return JsonResponse({'error': 'Form data is invalid', 'errors': form.errors}, status=400)
     else:
         form = TaskForm(user=request.user)
-        users = User.objects.all()  # Retrieve all users for the "Assigned To" dropdown
-        return render(request, 'tasks/create_task.html', {'form': form, 'users': users})
+        return render(request, 'tasks/create_task.html', {'form': form})
 
 @login_required
 def edit_task(request, task_id):

@@ -78,10 +78,10 @@
                         <tr>
                             <!-- Link in Keyword Column -->
                             <td><a href="{% url 'task_detail' task.task_id %}">{{ task.task_id }}</a></td>
-                            <td>{{ task.task_summary }}</td>
-                            <td>{{ task.get_task_category_priority_display }}</td>
-                            <td>{{ task.status_update_assignee }}</td>
-                            <td>{{ task.task_category_functional }}</td>
+                            <td>{{ task.subject }}</td>
+                            <td>{{ task.priority }}</td>
+                            <td>{{ task.status }}</td>
+                            <td>{{ task.department.name }}</td>
                             <td>{{ task.deadline }}</td>
                         </tr>
                     {% empty %}

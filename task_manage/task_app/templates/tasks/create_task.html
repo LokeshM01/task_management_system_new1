@@ -4,12 +4,11 @@
 {% block content %}
 <div class="task-manager-container">
     <!-- Home Icon to Redirect to Home Page -->
-    <div class="home-icon">
-      <a href="{% if user.userprofile.category == "Departmental Manager" %}{% url 'home' %}{% else %}{% url 'assigned_to_me' %}{% endif %}">
-          <img src="{% static 'task_app/images/home-icon.svg' %}" alt="Home" class="icon">
-      </a>
-  </div>
-
+        <div class="home-icon">
+          <a href="{% if user.userprofile.category == "Departmental Manager" %}{% url 'home' %}{% else %}{% url 'assigned_to_me' %}{% endif %}">
+              <img src="{% static 'task_app/images/home-icon.svg' %}" alt="Home" class="icon">
+          </a>
+    </div>
     <h2>Create a Task</h2>
     <hr>
 
@@ -20,96 +19,62 @@
             <!-- Assigned By (Disabled) -->
             <div class="form-group">
                 <label for="assigned_by">Assigned by:</label>
-                <select id="assigned_by" name="assigned_by" disabled>
-                    <option selected>{{ request.user.username }}</option>
-                </select>
+                <input type="text" id="assigned_by" name="assigned_by" value="{{ request.user.username }}" disabled>
             </div>
 
-            <!-- Ticket Type -->
+            <!-- Ticket Type (Dynamic) -->
             <div class="form-group">
-                <label for="ticket_type">Ticket Type:</label>
-                <select id="ticket_type" name="ticket_type">
-                    <option value="Bug Fixing - Live">Bug Fixing - Live</option>
-                    <option value="Bug Fixing - Staging">Bug Fixing - Staging</option>
-                    <option value="Hardware">Hardware</option>
-                    <option value="Issues">Issues</option>
-                    <option value="New Engineering Requirement">New Engineering Requirement</option>
-                    <option value="Publishing">Publishing</option>
-                    <option value="Research">Research</option>
-                    <option value="Attendance">Attendance</option>
-                    <option value="Sales">Sales</option>
-                    <option value="Service">Service</option>
-                    <option value="Testing">Testing</option>
-                    <option value="Others">Others</option>
-                </select>
+                <label for="id_ticket_type">Ticket Type:</label>
+                {{ form.ticket_type }}
             </div>
 
-            <!-- Priority -->
+            <!-- Priority (Dynamic) -->
             <div class="form-group">
-                <label for="priority">Priority:</label>
-                <select id="priority" name="priority">
-                    <option value="High Priority">High Priority</option>
-                    <option value="Low Priority">Low Priority</option>
-                    <option value="Medium Priority">Medium Priority</option>
-                    <option value="Urgent">Urgent</option>
-                </select>
+                <label for="id_priority">Priority:</label>
+                {{ form.priority }}
             </div>
 
-            <!-- Department -->
+            <!-- Department (Dynamic) -->
             <div class="form-group">
-                <label for="department">Department:</label>
-                <select id="department" name="department">
-                    <option value="Engineering Team">Engineering Team</option>
-                    <option value="Product Team">Product Team</option>
-                    <option value="Sales Team">Sales Team</option>
-                    <option value="Content Team">Content Team</option>
-                    <option value="Customer Support">Customer Support</option>
-                    <option value="HR">HR</option>
-                    <option value="Non Management Staff">Non Management Staff</option>
-                    <option value="Publishing Team">Publishing Team</option>
-                    <option value="Help Desk">Help Desk</option>
-                    <option value="Executive Managers">Executive Managers</option>
-                </select>
+                <label for="id_department">Department:</label>
+                {{ form.department }}
             </div>
 
-            <!-- Assigned To -->
+            <!-- Assigned To (Dynamic) -->
             <div class="form-group">
-                <label for="assigned_to">Assigned to:</label>
-                <select id="assigned_to" name="assigned_to">
-                    {% for user in users %}
-                        <option value="{{ user.id }}">{{ user.username }}</option>
-                    {% endfor %}
-                </select>
+                <label for="id_assigned_to">Assigned to:</label>
+                {{ form.assigned_to }}
             </div>
 
             <!-- Deadline -->
             <div class="form-group">
-                <label for="deadline">Deadline:</label>
-                <input type="date" id="deadline" name="deadline">
+                <label for="id_deadline">Deadline:</label>
+                {{ form.deadline }}
             </div>
 
             <!-- Subject -->
             <div class="form-group full-width">
-                <label for="subject">Subject:</label>
-                <input type="text" id="subject" name="subject" required>
+                <label for="id_subject">Subject:</label>
+                {{ form.subject }}
             </div>
 
-            <!-- Request Details (Rich Text Editor) -->
+            <!-- Request Details -->
             <div class="form-group full-width">
-                <label for="request_details">Request details:</label>
-                <textarea id="request_details" name="request_details" rows="4"></textarea>
+                <label for="id_request_details">Request details:</label>
+                {{ form.request_details }}
             </div>
 
             <!-- Attach File -->
             <div class="form-group">
-                <label for="attach_file">Attach File:</label>
-                <input type="file" id="attach_file" name="attach_file" accept=".pdf,.ppt,.pptx,.doc,.docx,.mp4,.jpg,.png,.jpeg">
+                <label for="id_attach_file">Attach File:</label>
+                {{ form.attach_file }}
             </div>
 
-            <!-- Create Task Button -->
+            <!-- Submit Button -->
             <button type="submit" class="submit-btn">Create Task</button>
         </form>
     </div>
+</div>
 
     <!-- Success Popup -->
     <div id="successPopup" class="popup">
