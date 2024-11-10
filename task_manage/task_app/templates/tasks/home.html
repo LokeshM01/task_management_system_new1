@@ -7,10 +7,20 @@
     <div class="sidebar">
         <h2>Task Management System</h2>
         <ul>
-            <li><a href="{% url 'home' %}" class="active">Home</a></li>
-            <li><a href="{% url 'assigned_to_me' %}">Assigned To Me</a></li>
-            <li><a href="{% url 'assigned_by_me' %}">Assigned By Me</a></li>
-            <li><a href="{% url 'user_profile' %}">User Profile</a></li>
+            {% with request.user.userprofile as profile %}
+                {% if profile.category == 'Task Management System Manager' %}
+                    <li><a href="{% url 'activity' %}">Activity</a></li>
+                    <li><a href="{% url 'metrics' %}">Metrics</a></li>
+                    <li><a href="{% url 'user_profile' %}">User Profile</a></li>
+                {% else %}
+                    {% if profile.category == "Departmental Manager" %}
+                        <li><a href="{% url 'home' %}">Home</a></li>
+                    {% endif %}
+                    <li><a href="{% url 'assigned_to_me' %}">Assigned To Me</a></li>
+                    <li><a href="{% url 'assigned_by_me' %}">Assigned By Me</a></li>
+                    <li><a href="{% url 'user_profile' %}">User Profile</a></li>
+                {% endif %}
+            {% endwith %}
         </ul>
     </div>
 

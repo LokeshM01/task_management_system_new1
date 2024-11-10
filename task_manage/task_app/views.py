@@ -8,6 +8,9 @@ from django.utils import timezone
 from django.db.models import Q
 from datetime import datetime, timedelta
 from django.http import JsonResponse
+from django.http import HttpResponse
+from .models import ActivityLog
+import csv
 
 @login_required
 def home(request):
@@ -134,6 +137,13 @@ def create_task(request):
             task = form.save(commit=False)
             task.assigned_by = request.user  # Automatically set the assigned_by field
             task.save()
+            # Log the creation action
+            ActivityLog.objects.create(
+                action='created',
+                user=request.user,
+                task=task,
+                description=f"Task {task.task_id} created by {request.user.username}"
+            )
             return JsonResponse({'message': 'Task created successfully!', 'task_id': task.task_id})
         else:
             return JsonResponse({'error': 'Form data is invalid', 'errors': form.errors}, status=400)
@@ -217,10 +227,37 @@ def reassign_task(request, task_id):
 @login_required
 def dashboard(request):
     user_profile = UserProfile.objects.get(user=request.user)
-
-    # Redirect based on user category
-    if user_profile.category == 'Departmental Manager':
-        return redirect('home')  # Redirect Departmental Managers to Home Page
+    if user_profile.category == 'Task Management System Manager':
+        return redirect('activity')  # Redirect Managers to Activity Page
+    elif user_profile.category == 'Departmental Manager':
+        return redirect('home')      # Redirect Departmental Managers to Home Page
     else:
-        return redirect('assigned_to_me')  # Redirect other users to Assigned To Me Page
+        return redirect('assigned_to_me')  # Redirect others to Assigned To Me Page
 
+@login_required
+def activity(request):
+    # Fetch all activity logs for display, ordered by timestamp
+    activity_logs = ActivityLog.objects.all().order_by('-timestamp')
+    
+    return render(request, 'tasks/activity.html', {
+        'activity_logs': activity_logs
+    })
+
+@login_required
+def metrics(request):
+    # Display metrics data
+    return render(request, 'tasks/metrics.html')
+
+@login_required
+def download_activity_log(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="activity_log.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow(['User', 'Action', 'Task ID', 'Description', 'Timestamp'])
+    
+    logs = ActivityLog.objects.all().order_by('-timestamp')
+    for log in logs:
+        writer.writerow([log.user.username, log.get_action_display(), log.task.task_id, log.description, log.timestamp])
+    
+    return response

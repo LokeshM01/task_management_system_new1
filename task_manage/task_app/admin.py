@@ -2,6 +2,7 @@
 
 from django.contrib import admin
 from .models import Task, UserProfile, Department
+from .models import ActivityLog
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
@@ -17,3 +18,10 @@ class UserProfileAdmin(admin.ModelAdmin):
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
+
+@admin.register(ActivityLog)
+class ActivityLogAdmin(admin.ModelAdmin):
+    list_display = ('user', 'action', 'task', 'timestamp', 'description')  # Display these columns
+    list_filter = ('action', 'timestamp')  # Add filters for easier navigation
+    search_fields = ('user__username', 'task__task_id', 'description')  # Enable searching by user, task ID, and description
+    ordering = ('-timestamp',)  # Order by most recent activity

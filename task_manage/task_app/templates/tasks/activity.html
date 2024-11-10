@@ -1,0 +1,79 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+
+{% block content %}
+<div class="task-manager-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Task Management System</h2>
+        <ul>
+            {% with request.user.userprofile as profile %}
+                {% if profile.category == 'Task Management System Manager' %}
+                    <li><a href="{% url 'activity' %}" class="active">Activity</a></li>
+                    <li><a href="{% url 'metrics' %}">Metrics</a></li>
+                    <li><a href="{% url 'user_profile' %}">User Profile</a></li>
+                {% endif %}
+            {% endwith %}
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1>Activity Log</h1>
+            <p>Recent activities for tracking ticket-related events.</p>
+        </div>
+
+        <!-- Activity Log Table -->
+        <div class="activity-table">
+            {% if activity_logs %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Task ID</th>
+                        <th>Description</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in activity_logs %}
+                    <tr>
+                        <td>{{ log.user.username }}</td>
+                        <td>{{ log.get_action_display }}</td>
+                        <td>{{ log.task.task_id }}</td>
+                        <td>{{ log.description }}</td>
+                        <td>{{ log.timestamp }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button class="download-btn" onclick="window.location.href='{% url 'download_activity_log' %}'">Download Log</button>
+            {% else %}
+                <p>No activity logs available at the moment.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Inline CSS for styling -->
+<style>
+    .task-manager-container { display: flex; height: 100vh; font-family: Arial, sans-serif; }
+    .sidebar { background-color: #f4f4f9; color: #333; width: 250px; padding: 20px; text-align: center; }
+    .sidebar h2 { font-size: 22px; color: #4CAF50; }
+    .sidebar ul { list-style: none; padding: 0; }
+    .sidebar ul li { margin: 15px 0; }
+    .sidebar ul li a { text-decoration: none; color: #333; font-size: 18px; display: block; padding: 10px; border-radius: 8px; }
+    .sidebar ul li a.active, .sidebar ul li a:hover { background-color: #4CAF50; color: #fff; }
+    .main-content { flex: 1; padding: 20px; }
+    .header h1 { font-size: 24px; color: #333; }
+    .activity-table { margin-top: 20px; }
+    .activity-table table { width: 100%; border-collapse: collapse; }
+    .activity-table th, .activity-table td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+    .activity-table th { background-color: #f4f4f9; color: #333; }
+    .activity-table td { background-color: #fff; color: #333; }
+    .activity-table tr:hover td { background-color: #E8F5E9; }
+    .download-btn { padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+</style>
+{% endblock %}

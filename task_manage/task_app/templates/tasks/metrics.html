@@ -1,0 +1,73 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+
+{% block content %}
+<div class="task-manager-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Task Management System</h2>
+        <ul>
+            {% with request.user.userprofile as profile %}
+                {% if profile.category == 'Task Management System Manager' %}
+                    <li><a href="{% url 'activity' %}">Activity</a></li>
+                    <li><a href="{% url 'metrics' %}" class="active">Metrics</a></li>
+                    <li><a href="{% url 'user_profile' %}">User Profile</a></li>
+                {% endif %}
+            {% endwith %}
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1>Ticket Metrics</h1>
+            <p>Overview of ticket activity in the last 24 hours, updated every 3 hours.</p>
+        </div>
+
+        <!-- Metrics Table -->
+        <div class="metrics-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Department</th>
+                        <th>Tickets Raised</th>
+                        <th>Tickets Closed</th>
+                        <th>Tickets Received</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for metric in metrics %}
+                    <tr>
+                        <td>{{ metric.department }}</td>
+                        <td>{{ metric.tickets_raised }}</td>
+                        <td>{{ metric.tickets_closed }}</td>
+                        <td>{{ metric.tickets_received }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button class="download-btn" onclick="window.location.href='{% url 'download_metrics' %}'">Download Metrics</button>
+        </div>
+    </div>
+</div>
+
+<!-- Inline CSS for styling -->
+<style>
+    .task-manager-container { display: flex; height: 100vh; font-family: Arial, sans-serif; }
+    .sidebar { background-color: #f4f4f9; color: #333; width: 250px; padding: 20px; text-align: center; }
+    .sidebar h2 { font-size: 22px; color: #4CAF50; }
+    .sidebar ul { list-style: none; padding: 0; }
+    .sidebar ul li { margin: 15px 0; }
+    .sidebar ul li a { text-decoration: none; color: #333; font-size: 18px; display: block; padding: 10px; border-radius: 8px; }
+    .sidebar ul li a.active, .sidebar ul li a:hover { background-color: #4CAF50; color: #fff; }
+    .main-content { flex: 1; padding: 20px; }
+    .header h1 { font-size: 24px; color: #333; }
+    .metrics-table { margin-top: 20px; }
+    .metrics-table table { width: 100%; border-collapse: collapse; }
+    .metrics-table th, .metrics-table td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+    .metrics-table th { background-color: #f4f4f9; color: #333; }
+    .metrics-table td { background-color: #fff; color: #333; }
+    .metrics-table tr:hover td { background-color: #E8F5E9; }
+    .download-btn { padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+</style>
+{% endblock %}
