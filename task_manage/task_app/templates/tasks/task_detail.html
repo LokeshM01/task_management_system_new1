@@ -17,6 +17,7 @@
       color: #4CAF50;
       font-size: 28px;
       margin-bottom: 20px;
+      text-align: center; /* Center the heading */
     }
 
     .task-detail-container {
@@ -64,33 +65,28 @@
     <p><strong>Assigned By:</strong> {{ task.assigned_by.username }}</p>
     <p><strong>Assigned To:</strong> {{ task.assigned_to.username }}</p>
     <p><strong>Department:</strong> {{ task.department.name }}</p>
-    <p><strong>Task Summary:</strong> {{ task.task_summary }}</p>
+    <p><strong>Ticket Type:</strong> {{ task.ticket_type }}</p>
     <p><strong>Deadline:</strong> {{ task.deadline }}</p>
-    <p><strong>Priority Level:</strong> {{ task.task_category_priority }}</p>
-    <p><strong>Functional Category:</strong> {{ task.task_category_functional }}</p>
-    <p><strong>Status (Assignor):</strong> {{ task.status_update_assignor }}</p>
-    <p><strong>Status (Assignee):</strong> {{ task.status_update_assignee }}</p>
-    <p><strong>Supporting Files:</strong> <a href="{{ task.supporting_files.url }}">Download</a></p>
-
-    <h3>Comments by Manager</h3>
-    <p>{{ task.comments_by_manager }}</p>
-
-    <h3>Comments by Assignee</h3>
-    <p>{% if task.comments_by_assignee %} {{ task.comments_by_assignee }} {% else %} None {% endif %}</p>
+    <p><strong>Priority Level:</strong> {{ task.priority }}</p>
+    <p><strong>Subject:</strong> {{ task.subject }}</p>
+    <p><strong>Request Details:</strong> {{ task.request_details }}</p>
+    <p><strong>Status:</strong> {{ task.status }}</p>
+    <p><strong>Attached File:</strong> 
+        {% if task.attach_file %}
+            <a href="{{ task.attach_file.url }}" download>Download</a>
+        {% else %}
+            No file attached
+        {% endif %}
+    </p>
 
     <!-- Display action links -->
     <div class="task-links">
-      <!-- Display "Update Status" link only if the current user is the assignee -->
       {% if task.assigned_to == user %}
         <a href="{% url 'update_task_status' task.task_id %}">Update Status</a>
       {% endif %}
-
-      <!-- Display "Edit Task" link only if the current user is the task creator -->
       {% if task.assigned_by == user %}
         <a href="{% url 'edit_task' task.task_id %}">Edit Task</a>
       {% endif %}
-
-      <!-- Display "Reassign to Creator" link only if the current user is the assignee -->
       {% if task.assigned_to == user %}
         <a href="{% url 'reassign_task' task.task_id %}">Reassign to Creator</a>
       {% endif %}

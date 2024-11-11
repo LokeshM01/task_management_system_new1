@@ -13,6 +13,7 @@ from .models import ActivityLog
 import csv
 import pandas as pd
 from django.db.models import Count
+from .forms import TaskStatusUpdateForm
 
 @login_required
 def home(request):
@@ -163,10 +164,11 @@ def edit_task(request, task_id):
         form = TaskForm(request.POST, request.FILES, instance=task)
         if form.is_valid():
             form.save()
-            return redirect('task_detail', task_id=task.task_id)
+            return redirect('assigned_by_me')  # Redirect to "assigned by me" page after saving
     else:
         form = TaskForm(instance=task)
-    return render(request, 'tasks/edit_task.html', {'form': form})
+
+    return render(request, 'tasks/edit_task.html', {'task': task, 'form': form})
 
 @login_required
 def task_detail(request, task_id):
@@ -187,20 +189,15 @@ def update_task_status(request, task_id):
 
     if request.method == 'POST':
         form = TaskStatusUpdateForm(request.POST, instance=task)
-        comment_form = AssigneeCommentForm(request.POST, instance=task)
-        if form.is_valid() and comment_form.is_valid():
+        if form.is_valid():
             form.save()
-            comment_form.save()
-            return redirect('task_detail', task_id=task.task_id)
-
+            return redirect('task_detail', task_id=task.task_id)  # Redirect after saving
     else:
         form = TaskStatusUpdateForm(instance=task)
-        comment_form = AssigneeCommentForm(instance=task)
 
     return render(request, 'tasks/update_task_status.html', {
-        'form': form,
-        'comment_form': comment_form,
         'task': task,
+        'form': form,
     })
 
 @login_required
@@ -322,3 +319,5 @@ def download_metrics(request):
     df.to_csv(path_or_buf=response, index=False)
 
     return response
+
+

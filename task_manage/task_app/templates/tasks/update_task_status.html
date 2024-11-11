@@ -1,5 +1,3 @@
-<!-- task_app/templates/tasks/update_task_status.html -->
-
 {% extends 'base_generic.html' %}
 
 {% block content %}
@@ -70,7 +68,7 @@
     {% if task.assigned_to == request.user %}
       <div class="form-group">
         <label for="id_comments_by_assignee">Add Comments:</label>
-        {{ comment_form.comments_by_assignee }}  <!-- Comment text area -->
+        {{ form.comments_by_assignee }}  <!-- Comment text area -->
       </div>
     {% endif %}
     

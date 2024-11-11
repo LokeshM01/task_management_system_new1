@@ -36,3 +36,13 @@ class TaskForm(forms.ModelForm):
 
         if not self.fields['assigned_to'].queryset.exists():
             self.fields['assigned_to'].queryset = User.objects.none()
+
+
+class TaskStatusUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Task
+        fields = ['status', 'revised_completion_date', 'comments_by_assignee']
+        widgets = {
+            'revised_completion_date': forms.DateInput(attrs={'type': 'date'}),
+            'comments_by_assignee': forms.Textarea(attrs={'rows': 4}),
+        }
