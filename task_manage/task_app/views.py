@@ -200,6 +200,14 @@ def task_detail(request, task_id):
        task.assigned_by == request.user or \
        task.assigned_to == request.user:
         return render(request, 'tasks/task_detail.html', {'task': task})
+    
+    # Additional check for Departmental Manager access
+    if user_profile.category == 'Departmental Manager':
+        # Check if the task is assigned to or created by a user in the manager's department
+        if task.assigned_to.userprofile.department == user_profile.department or task.assigned_by.userprofile.department == user_profile.department:
+            # Grant access to the view
+            return render(request, 'tasks/task_detail.html', {'task': task})
+
     else:
         raise PermissionDenied
 
