@@ -219,7 +219,8 @@ def reassign_task(request, task_id):
     task.assigned_to = task.assigned_by
     task.save()
 
-    return redirect('task_detail', task_id=task.task_id)
+    # Redirect to the "Assigned to Me" page after reassigning
+    return redirect('assigned_to_me')
 
 @login_required
 def dashboard(request):
