@@ -12,7 +12,7 @@ class TaskForm(forms.ModelForm):
         model = Task
         fields = [
             'assigned_to', 'deadline', 'ticket_type', 'priority',
-            'department', 'subject', 'request_details', 'attach_file'
+            'department', 'subject', 'request_details', 'attach_file', 'status'
         ]
         widgets = {
             'deadline': forms.DateInput(attrs={'type': 'date'}),

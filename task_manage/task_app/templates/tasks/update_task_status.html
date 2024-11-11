@@ -51,7 +51,25 @@
     .btn:hover {
       background-color: #45a049;
     }
+
+    /* Link Text for Task Detail Page */
+    .task-detail-link {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 18px;
+      color: #4CAF50;
+      text-decoration: none;
+    }
+
+    .task-detail-link:hover {
+      text-decoration: underline;
+      color: #388E3C;
+    }
   </style>
+
+  <!-- Back to Task Detail Link -->
+  <a href="{% url 'task_detail' task.task_id %}" class="task-detail-link">← Back to Task Details</a>
 
   <h2>Update Task: {{ task.task_id }}</h2>
   
@@ -75,8 +93,5 @@
       <!-- Submit Button -->
       <button type="submit" class="btn">Submit Updates</button>
     </form>
-    
-    <!-- Back to Task Detail Link -->
-    <a href="{% url 'task_detail' task.task_id %}">Back to Task Detail</a>
   </div>
 {% endblock %}

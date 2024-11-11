@@ -90,10 +90,11 @@ class Task(models.Model):
 class ActivityLog(models.Model):
     ACTION_CHOICES = [
         ('created', 'Created'),
-        ('updated', 'Updated'),
+        ('status_updated', 'Status Updated'),
+        ('priority_changed', 'Priority Changed'),
+        ('deadline_revised', 'Deadline Revised'),
+        ('comment_added', 'Comment Added'),
         ('assigned', 'Assigned'),
-        ('status_changed', 'Status Changed'),
-        ('deleted', 'Deleted'),
     ]
 
     action = models.CharField(max_length=50, choices=ACTION_CHOICES)

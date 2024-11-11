@@ -88,7 +88,7 @@
                     {% for task in tasks %}
                         <tr>
                             <!-- Link in Keyword Column -->
-                            <td><a href="{% url 'task_detail' task.task_id %}">{{ task.task_id }}</a></td>
+                            <td><a href="{% url 'task_detail' task.task_id %}" class="task-keyword-link">{{ task.task_id }}</a></td>
                             <td>{{ task.subject }}</td>
                             <td>{{ task.priority }}</td>
                             <td>{{ task.status }}</td>
@@ -112,6 +112,12 @@
         display: flex;
         height: 100vh;
         font-family: Arial, sans-serif;
+    }
+
+    .task-keyword-link {
+      
+      color: #4CAF50;
+      text-decoration: none;
     }
 
     .sidebar {

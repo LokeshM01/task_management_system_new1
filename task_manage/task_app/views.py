@@ -160,15 +160,37 @@ def edit_task(request, task_id):
     if task.assigned_by != request.user:
         raise PermissionDenied
 
+    old_priority = task.priority  # Capture the current priority before changes
+    old_status = task.status
+
     if request.method == 'POST':
         form = TaskForm(request.POST, request.FILES, instance=task)
         if form.is_valid():
-            form.save()
-            return redirect('assigned_by_me')  # Redirect to "assigned by me" page after saving
+            updated_task = form.save()
+
+            if old_status != updated_task.status:
+                ActivityLog.objects.create(
+                    action='status_changed',
+                    user=request.user,
+                    task=task,
+                    description=f"Status changed from '{old_status}' to '{updated_task.status}'"
+                )
+
+            # Log priority change if it was updated
+            if old_priority != task.priority:
+                ActivityLog.objects.create(
+                    action='priority_changed',
+                    user=request.user,
+                    task=task,
+                    description=f"Priority changed from {old_priority} to {task.priority}"
+                )
+
+            return redirect('assigned_by_me')
     else:
         form = TaskForm(instance=task)
 
     return render(request, 'tasks/edit_task.html', {'task': task, 'form': form})
+
 
 @login_required
 def task_detail(request, task_id):
@@ -184,19 +206,38 @@ def task_detail(request, task_id):
 @login_required
 def update_task_status(request, task_id):
     task = get_object_or_404(Task, task_id=task_id)
-    
+
+    old_deadline = task.revised_completion_date
+    old_comments = task.comments_by_assignee
+
     if request.method == 'POST':
         form = TaskStatusUpdateForm(request.POST, instance=task)
         if form.is_valid():
             form.save()
-            return redirect('task_detail', task_id=task.task_id)  # Redirect to task detail page
+
+            # Log deadline revision
+            if old_deadline != task.revised_completion_date:
+                ActivityLog.objects.create(
+                    action='deadline_revised',
+                    user=request.user,
+                    task=task,
+                    description=f"Deadline revised from {old_deadline} to {task.revised_completion_date}"
+                )
+
+            # Log comment addition
+            if old_comments != task.comments_by_assignee:
+                ActivityLog.objects.create(
+                    action='comment_added',
+                    user=request.user,
+                    task=task,
+                    description=f"Comment added or updated by assignee: {task.comments_by_assignee}"
+                )
+
+            return redirect('task_detail', task_id=task.task_id)
     else:
         form = TaskStatusUpdateForm(instance=task)
 
-    return render(request, 'tasks/update_task_status.html', {
-        'task': task,
-        'form': form,
-    })
+    return render(request, 'tasks/update_task_status.html', {'task': task, 'form': form})
 
 @login_required
 def mark_task_completed(request, task_id):
@@ -213,13 +254,22 @@ def mark_task_completed(request, task_id):
 @login_required
 def reassign_task(request, task_id):
     task = get_object_or_404(Task, task_id=task_id)
+    old_assignee = task.assigned_to  # Capture the current assignee before reassigning
+
     if task.assigned_to != request.user:
         raise PermissionDenied("Only the assignee can reassign the task back to the creator.")
 
     task.assigned_to = task.assigned_by
     task.save()
 
-    # Redirect to the "Assigned to Me" page after reassigning
+    # Log the reassignment
+    ActivityLog.objects.create(
+        action='assigned',
+        user=request.user,
+        task=task,
+        description=f"Task reassigned from {old_assignee.username} to {task.assigned_to.username}"
+    )
+
     return redirect('assigned_to_me')
 
 @login_required

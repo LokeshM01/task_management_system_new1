@@ -59,21 +59,117 @@
 
 <!-- Inline CSS for styling -->
 <style>
-    .task-manager-container { display: flex; height: 100vh; font-family: Arial, sans-serif; }
-    .sidebar { background-color: #f4f4f9; color: #333; width: 250px; padding: 20px; text-align: center; }
-    .sidebar h2 { font-size: 22px; color: #4CAF50; }
-    .sidebar ul { list-style: none; padding: 0; }
-    .sidebar ul li { margin: 15px 0; }
-    .sidebar ul li a { text-decoration: none; color: #333; font-size: 18px; display: block; padding: 10px; border-radius: 8px; }
-    .sidebar ul li a.active, .sidebar ul li a:hover { background-color: #4CAF50; color: #fff; }
-    .main-content { flex: 1; padding: 20px; }
-    .header h1 { font-size: 24px; color: #333; }
-    .activity-table { margin-top: 20px; }
-    .activity-table table { width: 100%; border-collapse: collapse; }
-    .activity-table th, .activity-table td { padding: 12px; border: 1px solid #ddd; text-align: left; }
-    .activity-table th { background-color: #f4f4f9; color: #333; }
-    .activity-table td { background-color: #fff; color: #333; }
-    .activity-table tr:hover td { background-color: #E8F5E9; }
-    .download-btn { margin-top: 23px;padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+    .task-manager-container {
+        display: flex;
+        height: 100vh;
+        font-family: Arial, sans-serif;
+    }
+
+    /* Sidebar Styling */
+    .sidebar {
+        background-color: #f4f4f9;
+        color: #333;
+        width: 250px;
+        padding: 20px;
+        text-align: center;
+        border-right: 1px solid #ddd;
+    }
+    .sidebar h2 {
+        font-size: 22px;
+        color: #4CAF50;
+        margin-bottom: 20px;
+    }
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+    }
+    .sidebar ul li {
+        margin: 15px 0;
+    }
+    .sidebar ul li a {
+        text-decoration: none;
+        color: #333;
+        font-size: 18px;
+        display: block;
+        padding: 10px;
+        border-radius: 8px;
+        transition: background-color 0.3s ease;
+    }
+    .sidebar ul li a.active,
+    .sidebar ul li a:hover {
+        background-color: #4CAF50;
+        color: #fff;
+    }
+
+    /* Main Content Styling */
+    .main-content {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+    }
+    .header h1 {
+        font-size: 24px;
+        color: #333;
+    }
+    .header p {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    /* Table Styling */
+    .activity-table {
+        margin-top: 20px;
+    }
+    .activity-table table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .activity-table th,
+    .activity-table td {
+        padding: 12px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+    .activity-table th {
+        background-color: #f4f4f9;
+        color: #333;
+    }
+    .activity-table td {
+        background-color: #fff;
+        color: #333;
+    }
+    .activity-table tr:hover td {
+        background-color: #E8F5E9;
+    }
+
+    /* Download Button Styling */
+    .download-btn {
+        margin-top: 23px;
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .download-btn:hover {
+        background-color: #388E3C;
+    }
+
+    /* Responsive Styling */
+    @media (max-width: 768px) {
+        .task-manager-container {
+            flex-direction: column;
+        }
+        .sidebar {
+            width: 100%;
+            text-align: center;
+            border-right: none;
+            border-bottom: 1px solid #ddd;
+        }
+    }
 </style>
 {% endblock %}

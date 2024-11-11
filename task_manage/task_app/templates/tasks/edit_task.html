@@ -1,6 +1,5 @@
-<!-- task_app/templates/tasks/edit_task.html -->
-
 {% extends "base_generic.html" %}
+{% load static %}
 
 {% block content %}
   <style>
@@ -17,7 +16,22 @@
       color: #4CAF50;
       font-size: 28px;
       margin-bottom: 20px;
-      text-align: center;  /* Center the heading */
+      text-align: center;
+    }
+
+    /* Link Text for Task Detail Page */
+    .task-detail-link {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 18px;
+      color: #4CAF50;
+      text-decoration: none;
+    }
+
+    .task-detail-link:hover {
+      text-decoration: underline;
+      color: #388E3C;
     }
 
     .form-container {
@@ -52,28 +66,25 @@
     button:hover {
       background-color: #16A085;
     }
-
-    /* Navbar Styling */
-    .navbar a {
-      margin-right: 15px;
-      color: white;
-      padding: 8px 12px;
-      background-color: #34495E;
-      text-decoration: none;
-      border-radius: 4px;
-    }
-
-    .navbar a:hover {
-      background-color: #1ABC9C;
-    }
   </style>
-  
+
+  <!-- Task Detail Link -->
+  <a href="{% url 'task_detail' task.task_id %}" class="task-detail-link">← Back to Task Details</a>
+
   <h2>Edit Task: {{ task.task_id }}</h2>
 
   <div class="form-container">
     <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
+      <!-- Include the form fields, including the Status field -->
       {{ form.as_p }}
+      
+      <!-- Render the Status field separately if not automatically included in {{ form.as_p }} -->
+      <!-- <div class="form-group">
+        <label for="id_status">Status:</label>
+        {{ form.status }}
+      </div> -->
+
       <button type="submit">Save Changes</button>
     </form>
   </div>
