@@ -41,8 +41,12 @@ class TaskForm(forms.ModelForm):
 class TaskStatusUpdateForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['status', 'revised_completion_date', 'comments_by_assignee']
+        fields = ['comments_by_assignee', 'revised_completion_date']
         widgets = {
             'revised_completion_date': forms.DateInput(attrs={'type': 'date'}),
-            'comments_by_assignee': forms.Textarea(attrs={'rows': 4}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super(TaskStatusUpdateForm, self).__init__(*args, **kwargs)
+        self.fields['comments_by_assignee'].required = False
+        self.fields['revised_completion_date'].required = False

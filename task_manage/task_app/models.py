@@ -69,6 +69,8 @@ class Task(models.Model):
     subject = models.CharField(max_length=255)
     request_details = models.TextField(blank=True, null=True)  # Previously comments_by_manager
     attach_file = models.FileField(upload_to='attachments/', blank=True, null=True)
+    revised_completion_date = models.DateField(null=True, blank=True)  # Optional revised deadline
+    comments_by_assignee = models.TextField(blank=True, null=True) 
 
     def save(self, *args, **kwargs):
         if not self.task_id:

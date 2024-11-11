@@ -184,14 +184,12 @@ def task_detail(request, task_id):
 @login_required
 def update_task_status(request, task_id):
     task = get_object_or_404(Task, task_id=task_id)
-    if task.assigned_to != request.user:
-        raise PermissionDenied("Only the assignee can update this task.")
-
+    
     if request.method == 'POST':
         form = TaskStatusUpdateForm(request.POST, instance=task)
         if form.is_valid():
             form.save()
-            return redirect('task_detail', task_id=task.task_id)  # Redirect after saving
+            return redirect('task_detail', task_id=task.task_id)  # Redirect to task detail page
     else:
         form = TaskStatusUpdateForm(instance=task)
 

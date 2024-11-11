@@ -78,6 +78,21 @@
             No file attached
         {% endif %}
     </p>
+    
+    <p><strong>Revised Completion Date:</strong> 
+      {% if task.revised_completion_date %}
+          {{ task.revised_completion_date }}
+      {% else %}
+          Not revised
+      {% endif %}
+  </p>
+  <p><strong>Comments by Assignee:</strong> 
+      {% if task.comments_by_assignee %}
+          {{ task.comments_by_assignee }}
+      {% else %}
+          No comments yet
+      {% endif %}
+  </p>
 
     <!-- Display action links -->
     <div class="task-links">
