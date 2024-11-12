@@ -9,16 +9,16 @@
         <ul>
             {% with request.user.userprofile as profile %}
                 {% if profile.category == 'Task Management System Manager' %}
-                    <li><a href="{% url 'activity' %}">Activity</a></li>
-                    <li><a href="{% url 'metrics' %}">Metrics</a></li>
-                    <li><a href="{% url 'user_profile' %}">User Profile</a></li>
+                    <li><a href="{% url 'activity' %}" class="{% if request.resolver_match.url_name == 'activity' %}active{% endif %}">Activity</a></li>
+                    <li><a href="{% url 'metrics' %}" class="{% if request.resolver_match.url_name == 'metrics' %}active{% endif %}">Metrics</a></li>
+                    <li><a href="{% url 'user_profile' %}" class="{% if request.resolver_match.url_name == 'user_profile' %}active{% endif %}">User Profile</a></li>
                 {% else %}
                     {% if profile.category == "Departmental Manager" %}
-                        <li><a href="{% url 'home' %}">Home</a></li>
+                        <li><a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a></li>
                     {% endif %}
-                    <li><a href="{% url 'assigned_to_me' %}">Assigned To Me</a></li>
-                    <li><a href="{% url 'assigned_by_me' %}">Assigned By Me</a></li>
-                    <li><a href="{% url 'user_profile' %}">User Profile</a></li>
+                    <li><a href="{% url 'assigned_to_me' %}" class="{% if request.resolver_match.url_name == 'assigned_to_me' %}active{% endif %}">Assigned To Me</a></li>
+                    <li><a href="{% url 'assigned_by_me' %}" class="{% if request.resolver_match.url_name == 'assigned_by_me' %}active{% endif %}">Assigned By Me</a></li>
+                    <li><a href="{% url 'user_profile' %}" class="{% if request.resolver_match.url_name == 'user_profile' %}active{% endif %}">User Profile</a></li>
                 {% endif %}
             {% endwith %}
         </ul>
@@ -29,7 +29,7 @@
         <h1>Good Morning, {{ request.user.first_name }}!</h1>
         <div class="profile-details">
             <div class="profile-item">
-                <img src="{% static 'task_app/images/user-icon.png' %}" alt="User Icon" class="icon">
+                <img src="https://www.svgrepo.com/show/105517/user-icon.svg" alt="User Icon" class="icon">
                 <p><strong>{{ request.user.get_full_name }}</strong></p>
             </div>
             <div class="profile-item">
