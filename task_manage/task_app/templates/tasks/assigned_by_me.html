@@ -82,6 +82,8 @@
                         <th>Status</th>
                         <th>Department</th>
                         <th>Deadline</th>
+                        <th>Assigned To</th>
+                        <th>Revised Deadline</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -93,6 +95,8 @@
                             <td>{{ task.status }}</td>
                             <td>{{ task.department.name }}</td>
                             <td>{{ task.deadline }}</td>
+                            <td>{{ task.assigned_to.get_full_name }}</td>
+                            <td>{{ task.revised_completion_date|default:"NA" }}</td>
                         </tr>
                     {% empty %}
                         <tr>
