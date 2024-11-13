@@ -31,7 +31,7 @@ def home(request):
         return render(request, 'tasks/home.html', {
             'tasks': tasks,
             'departments': Department.objects.all(),
-            'functional_categories': Task.FUNCTIONAL_CATEGORIES,
+            
         })
 
     return redirect('assigned_to_me')
@@ -47,7 +47,7 @@ def assigned_to_me(request):
     # Render the template with the tasks and functional categories
     return render(request, 'tasks/assigned_to_me.html', {
         'tasks': tasks,
-        'functional_categories': functional_categories
+        'departments': Department.objects.all(),
     })
 
 @login_required
@@ -61,7 +61,7 @@ def assigned_by_me(request):
     # Render the template with the tasks and functional categories
     return render(request, 'tasks/assigned_by_me.html', {
         'tasks': tasks,
-        'functional_categories': functional_categories
+        'departments': Department.objects.all(),
     })
 
 @login_required
