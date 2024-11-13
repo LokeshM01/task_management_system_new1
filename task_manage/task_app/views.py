@@ -145,7 +145,7 @@ def create_task(request):
                 action='created',
                 user=request.user,
                 task=task,
-                description=f"Task {task.task_id} created by {request.user.username}"
+                description=f"Task {task.task_id} created by {request.user.username} for {task.assigned_to.username}"
             )
             return JsonResponse({'message': 'Task created successfully!', 'task_id': task.task_id})
         else:
