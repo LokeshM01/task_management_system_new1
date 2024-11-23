@@ -62,6 +62,14 @@
                     {% endfor %}
                 </select>
 
+                <!-- Functional Category Filter (Assigned to) -->
+                <select id="assigned_to_filter">
+                    <option value="">Assigned To</option>
+                    {% for user in users %}
+                    <option value="{{ user.get_full_name}}">{{ user.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+
                 <!-- Deadline Filter -->
                 <input type="date" id="deadlineFilter">
                 <button class="filter-btn" onclick="filterTable()">Filter</button>
@@ -238,7 +246,7 @@
         const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
         const departmentFilter = document.getElementById('departmentFilter').value.toLowerCase();
         const deadlineFilter = document.getElementById('deadlineFilter').value;
-
+        const assigned_to_filter=document.getElementById('assigned_to_filter').value.toLowerCase();
         const table = document.getElementById('taskTable');
         const rows = table.getElementsByTagName('tr');
 
@@ -248,8 +256,10 @@
                 const priority = cells[2].innerText.toLowerCase();
                 const status = cells[3].innerText.toLowerCase();
                 const department = cells[4].innerText.toLowerCase();
-                const deadline = cells[5].innerText;
 
+                const deadline = cells[5].innerText;
+                const assigned_to = cells[6].innerText.toLowerCase();
+                
                 let displayRow = true;
 
                 if (priorityFilter && priority !== priorityFilter) displayRow = false;
@@ -263,6 +273,8 @@
                         displayRow = false;
                     }
                 }
+
+                if (assigned_to_filter && assigned_to !== assigned_to_filter) displayRow = false;
 
                 rows[i].style.display = displayRow ? '' : 'none';
             }

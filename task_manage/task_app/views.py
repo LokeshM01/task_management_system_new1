@@ -48,6 +48,7 @@ def assigned_to_me(request):
     return render(request, 'tasks/assigned_to_me.html', {
         'tasks': tasks,
         'departments': Department.objects.all(),
+        'users':User.objects.all(),
     })
 
 @login_required
@@ -62,6 +63,7 @@ def assigned_by_me(request):
     return render(request, 'tasks/assigned_by_me.html', {
         'tasks': tasks,
         'departments': Department.objects.all(),
+        'users':User.objects.all(),
     })
 
 @login_required
