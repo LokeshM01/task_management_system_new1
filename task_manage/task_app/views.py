@@ -377,4 +377,40 @@ def download_metrics(request):
 
     return response
 
+@login_required
+def reassign_within_department(request, task_id):
+    task = get_object_or_404(Task, task_id=task_id)
+    user_profile = UserProfile.objects.get(user=request.user)
+
+    # Ensure only Departmental Managers can access this functionality
+    if user_profile.category != 'Departmental Manager':
+        raise PermissionDenied("Only Departmental Managers can reassign tasks.")
+
+    # Fetch non-management users in the same department
+    non_management_users = UserProfile.objects.filter(
+        department=user_profile.department,
+        category='Non-Management'
+    )
+
+    if request.method == 'POST':
+        new_assignee_id = request.POST.get('assigned_to')
+        if new_assignee_id:
+            new_assignee = get_object_or_404(User, id=new_assignee_id)
+            task.assigned_to = new_assignee
+            task.save()
+
+            # Log the reassignment action
+            ActivityLog.objects.create(
+                action='assigned',
+                user=request.user,
+                task=task,
+                description=f"Task {task.task_id} reassigned from {request.user.username} to {new_assignee.username}"
+            )
+            return redirect('task_detail', task_id=task.task_id)
+
+    return render(request, 'tasks/reassign_within_department.html', {
+        'task': task,
+        'non_management_users': non_management_users,
+    })
+
 

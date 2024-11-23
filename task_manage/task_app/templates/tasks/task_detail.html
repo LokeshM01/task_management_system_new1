@@ -1,140 +1,141 @@
-<!-- task_app/templates/tasks/task_detail.html -->
-
 {% extends 'base_generic.html' %}
-{% load static %}  <!-- Load the static files tag -->
+{% load static %}
 
 {% block content %}
-  <style>
-    /* Inline CSS for Task Detail Page */
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
-      color: #333;
-      margin: 0;
-      padding: 0;
-    }
+<style>
+  /* Inline CSS for Task Detail Page */
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    margin: 0;
+    padding: 0;
+  }
 
-    h2 {
-      color: #4CAF50;
-      font-size: 28px;
-      margin-bottom: 20px;
-      text-align: center; /* Center the heading */
-    }
+  h2 {
+    color: #4CAF50;
+    font-size: 28px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
 
-    .task-detail-container {
-      background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
-    }
+  .task-detail-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  }
 
-    .task-detail-container p {
-      font-size: 16px;
-      margin: 10px 0;
-    }
+  .task-detail-container p {
+    font-size: 16px;
+    margin: 10px 0;
+  }
 
-    h3 {
-      color: #333;
-      font-size: 22px;
-      margin-bottom: 10px;
-    }
+  h3 {
+    color: #333;
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
 
-    a {
-      color: #1ABC9C;
-      text-decoration: none;
-      padding: 10px 15px;
-      background-color: #34495E;
-      color: white;
-      border-radius: 4px;
-      display: inline-block;
-      margin-top: 10px;
-    }
+  a {
+    color: #1ABC9C;
+    text-decoration: none;
+    padding: 10px 15px;
+    background-color: #34495E;
+    color: white;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 10px;
+  }
 
-    a:hover {
-      background-color: #1ABC9C;
-    }
+  a:hover {
+    background-color: #1ABC9C;
+  }
 
-    .task-links {
-      margin-top: 20px;
-    }
+  .task-links {
+    margin-top: 20px;
+  }
 
-    /* Updated Home Icon Styling */
-    .home-icon {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-    }
-    
-    .home-icon a {
-      margin-top: -15px;
-      display: inline-block;
-    }
-    
-    .home-icon img.icon {
-      width: 52px;
-      height: 47px;
-      cursor: pointer;
-      filter: brightness(0) saturate(100%) invert(40%) sepia(80%) saturate(300%) hue-rotate(70deg) brightness(90%) contrast(100%);
-    }
-  </style>
+  /* Home Icon Styling */
+  .home-icon {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+  }
 
-  <!-- Home Icon to Redirect to Home Page -->
-  <div class="home-icon">
-    <a href="{% if user.userprofile.category == 'Departmental Manager' %}{% url 'home' %}
-              {% elif task.assigned_by == user and task.assigned_to == user %}{% url 'assigned_to_me' %}
-              {% elif task.assigned_by == user %}{% url 'assigned_by_me' %}
-              {% else %}{% url 'assigned_to_me' %}{% endif %}">
-      <img src="{% static 'task_app/images/home-icon.svg' %}" alt="Home" class="icon">
-    </a>
+  .home-icon a {
+    margin-top: -15px;
+    display: inline-block;
+  }
+
+  .home-icon img.icon {
+    width: 52px;
+    height: 47px;
+    cursor: pointer;
+    filter: brightness(0) saturate(100%) invert(40%) sepia(80%) saturate(300%) hue-rotate(70deg) brightness(90%) contrast(100%);
+  }
+</style>
+
+<!-- Home Icon to Redirect to Home Page -->
+<div class="home-icon">
+  <a href="{% if user.userprofile.category == 'Departmental Manager' %}{% url 'home' %}
+            {% elif task.assigned_by == user and task.assigned_to == user %}{% url 'assigned_to_me' %}
+            {% elif task.assigned_by == user %}{% url 'assigned_by_me' %}
+            {% else %}{% url 'assigned_to_me' %}{% endif %}">
+    <img src="{% static 'task_app/images/home-icon.svg' %}" alt="Home" class="icon">
+  </a>
+</div>
+
+<h2>Task Details: {{ task.task_id }}</h2>
+
+<div class="task-detail-container">
+  <p><strong>Assigned By:</strong> {{ task.assigned_by.get_full_name }}</p>
+  <p><strong>Assigned To:</strong> {{ task.assigned_to.get_full_name }}</p>
+  <p><strong>Department:</strong> {{ task.department.name }}</p>
+  <p><strong>Ticket Type:</strong> {{ task.ticket_type }}</p>
+  <p><strong>Deadline:</strong> {{ task.deadline }}</p>
+  <p><strong>Priority Level:</strong> {{ task.priority }}</p>
+  <p><strong>Subject:</strong> {{ task.subject }}</p>
+  <p><strong>Request Details:</strong> {{ task.request_details }}</p>
+  <p><strong>Status:</strong> {{ task.status }}</p>
+  <p><strong>Attached File:</strong> 
+    {% if task.attach_file %}
+      <a href="{{ task.attach_file.url }}" download>Download</a>
+    {% else %}
+      No file attached
+    {% endif %}
+  </p>
+  
+  <p><strong>Revised Completion Date:</strong> 
+    {% if task.revised_completion_date %}
+      {{ task.revised_completion_date }}
+    {% else %}
+      Not revised
+    {% endif %}
+  </p>
+  <p><strong>Comments by Assignee:</strong> 
+    {% if task.comments_by_assignee %}
+      {{ task.comments_by_assignee }}
+    {% else %}
+      No comments yet
+    {% endif %}
+  </p>
+
+  <!-- Display action links -->
+  <div class="task-links">
+    {% if task.assigned_to == user %}
+      <a href="{% url 'update_task_status' task.task_id %}">Update Status</a>
+    {% endif %}
+    {% if task.assigned_by == user %}
+      <a href="{% url 'edit_task' task.task_id %}">Edit Task</a>
+    {% endif %}
+    {% if task.assigned_to == user %}
+      <a href="{% url 'reassign_task' task.task_id %}">Reassign to Creator</a>
+    {% endif %}
+    {% if task.assigned_to.userprofile.category == 'Departmental Manager' and user.userprofile.category == 'Departmental Manager' %}
+      <a href="{% url 'reassign_within_department' task.task_id %}">Reassign Within Department</a>
+    {% endif %}
   </div>
-
-  <h2>Task Details: {{ task.task_id }}</h2>
-
-  <div class="task-detail-container">
-    <p><strong>Assigned By:</strong> {{ task.assigned_by.username }}</p>
-    <p><strong>Assigned To:</strong> {{ task.assigned_to.username }}</p>
-    <p><strong>Department:</strong> {{ task.department.name }}</p>
-    <p><strong>Ticket Type:</strong> {{ task.ticket_type }}</p>
-    <p><strong>Deadline:</strong> {{ task.deadline }}</p>
-    <p><strong>Priority Level:</strong> {{ task.priority }}</p>
-    <p><strong>Subject:</strong> {{ task.subject }}</p>
-    <p><strong>Request Details:</strong> {{ task.request_details }}</p>
-    <p><strong>Status:</strong> {{ task.status }}</p>
-    <p><strong>Attached File:</strong> 
-      {% if task.attach_file %}
-          <a href="{{ task.attach_file.url }}" download>Download</a>
-      {% else %}
-          No file attached
-      {% endif %}
-    </p>
-    
-    <p><strong>Revised Completion Date:</strong> 
-      {% if task.revised_completion_date %}
-          {{ task.revised_completion_date }}
-      {% else %}
-          Not revised
-      {% endif %}
-    </p>
-    <p><strong>Comments by Assignee:</strong> 
-      {% if task.comments_by_assignee %}
-          {{ task.comments_by_assignee }}
-      {% else %}
-          No comments yet
-      {% endif %}
-    </p>
-
-    <!-- Display action links -->
-    <div class="task-links">
-      {% if task.assigned_to == user %}
-        <a href="{% url 'update_task_status' task.task_id %}">Update Status</a>
-      {% endif %}
-      {% if task.assigned_by == user %}
-        <a href="{% url 'edit_task' task.task_id %}">Edit Task</a>
-      {% endif %}
-      {% if task.assigned_to == user %}
-        <a href="{% url 'reassign_task' task.task_id %}">Reassign to Creator</a>
-      {% endif %}
-    </div>
-  </div>
+</div>
 {% endblock %}
