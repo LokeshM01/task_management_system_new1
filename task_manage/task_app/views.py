@@ -196,20 +196,7 @@ def edit_task(request, task_id):
 def task_detail(request, task_id):
     task = get_object_or_404(Task, task_id=task_id)
     user_profile = UserProfile.objects.get(user=request.user)
-    if user_profile.category == 'Task Management System Manager' or \
-       task.assigned_by == request.user or \
-       task.assigned_to == request.user:
-        return render(request, 'tasks/task_detail.html', {'task': task})
-    
-    # Additional check for Departmental Manager access
-    if user_profile.category == 'Departmental Manager':
-        # Check if the task is assigned to or created by a user in the manager's department
-        if task.assigned_to.userprofile.department == user_profile.department or task.assigned_by.userprofile.department == user_profile.department:
-            # Grant access to the view
-            return render(request, 'tasks/task_detail.html', {'task': task})
-
-    else:
-        raise PermissionDenied
+    return render(request, 'tasks/task_detail.html', {'task': task})
 
 @login_required
 def update_task_status(request, task_id):
