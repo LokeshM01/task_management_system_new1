@@ -5,22 +5,45 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 
 def send_deadline_reminders_logic():
-    # Fetch tasks with deadlines within the next 24 hours
-    upcoming_deadline = now() + timedelta(hours=24)
-    tasks = Task.objects.filter(deadline__lte=upcoming_deadline, status__in=['Not Started', 'In Progress'])
+    # Get current time
+    current_time = now()
+
+    # Calculate the time window for 24-hour reminders
+    reminder_time = current_time + timedelta(hours=24)
+
+    # Fetch tasks with deadlines approaching within the next 24 hours
+    tasks = Task.objects.filter(deadline__range=(current_time, reminder_time), status__in=['Not Started', 'In Progress'])
 
     for task in tasks:
-        if task.assigned_to.email:  # Check if the assigned user has an email
-            # Prepare email context
+        if task.assigned_to:
+            # Send email to the assignee
             context = {
-                'task': task,
+                'user': task.assigned_to,
+                'ticket': task,
+                'view_ticket_url': f"http://127.0.0.1:8000/tasks/{task.task_id}/detail/",
             }
-            email_body = render_to_string('emails/reminder.html', context)
+            email_body = render_to_string('emails/deadline_reminder.html', context)
             send_mail(
-                f"Reminder: Task {task.task_id} deadline approaching",
-                '',  # Empty plain text body
-                'no-reply@yourdomain.com',
-                [task.assigned_to.email],
+                subject=f"Reminder: Task Deadline Approaching ({task.task_id})",
+                message='',  # Plain text (empty as we are using HTML)
+                from_email='no-reply@yourdomain.com',
+                recipient_list=[task.assigned_to.email],
+                html_message=email_body,
+            )
+
+        if task.assigned_by:
+            # Send email to the assignor
+            context = {
+                'user': task.assigned_by,
+                'ticket': task,
+                'view_ticket_url': f"http://127.0.0.1:8000/tasks/{task.task_id}/detail/",
+            }
+            email_body = render_to_string('emails/deadline_reminder.html', context)
+            send_mail(
+                subject=f"Reminder: Task Deadline Approaching ({task.task_id})",
+                message='',  # Plain text (empty as we are using HTML)
+                from_email='no-reply@yourdomain.com',
+                recipient_list=[task.assigned_by.email],
                 html_message=email_body,
             )
 
