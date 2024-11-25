@@ -14,6 +14,22 @@ import csv
 import pandas as pd
 from django.db.models import Count
 from .forms import TaskStatusUpdateForm
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.timezone import now
+from .tasks import send_deadline_reminders_logic, notify_overdue_tasks_logic
+
+def send_email_notification(subject, template_name, context, recipient_email):
+    """Utility function to send email notifications."""
+    email_body = render_to_string(template_name, context)
+    send_mail(
+        subject,
+        '',  # Empty string since we're using HTML
+        'no-reply@yourdomain.com',  # Replace with your email
+        [recipient_email],
+        html_message=email_body,
+        fail_silently=False,
+    )
 
 @login_required
 def home(request):
@@ -142,19 +158,69 @@ def create_task(request):
             task = form.save(commit=False)
             task.assigned_by = request.user  # Automatically set the assigned_by field
             task.save()
+
+            # Notify the departmental manager (if exists)
+            if task.department and hasattr(task.department, 'manager') and task.department.manager:
+                manager_email = task.department.manager.email  # Ensure the manager's email exists
+                view_ticket_url = request.build_absolute_uri(f'/tasks/{task.task_id}/detail/')
+                context = {
+                    'user': task.department.manager,
+                    'ticket': task,
+                    'view_ticket_url': view_ticket_url,
+                }
+                send_email_notification(
+                    subject="New Task Created in Your Department",
+                    template_name='emails/ticket_created.html',
+                    context=context,
+                    recipient_email=manager_email,
+                )
+
+            # Notify the assignee (if assigned)
+            if task.assigned_to:
+                assignee_email = task.assigned_to.email
+                view_ticket_url = request.build_absolute_uri(f'/tasks/{task.task_id}/detail/')
+                context = {
+                    'user': task.assigned_to,
+                    'ticket': task,
+                    'view_ticket_url': view_ticket_url,
+                }
+                send_email_notification(
+                    subject="You Have Been Assigned a New Task",
+                    template_name='emails/ticket_assigned.html',
+                    context=context,
+                    recipient_email=assignee_email,
+                )
+
+             # Notify the task creator
+            creator_email = task.assigned_by.email
+            view_ticket_url = request.build_absolute_uri(f'/tasks/{task.task_id}/detail/')
+            context = {
+                'user': task.assigned_by,
+                'ticket': task,
+                'view_ticket_url': view_ticket_url,
+            }
+            send_email_notification(
+                subject="Your Task Has Been Created",
+                template_name='emails/task_created_by_you.html',
+                context=context,
+                recipient_email=creator_email,
+            )
+
             # Log the creation action
             ActivityLog.objects.create(
                 action='created',
                 user=request.user,
                 task=task,
-                description=f"Task {task.task_id} created by {request.user.username} for {task.assigned_to.username}"
+                description=f"Task {task.task_id} created by {request.user.username} for {task.assigned_to.username if task.assigned_to else 'Unassigned'}"
             )
             return JsonResponse({'message': 'Task created successfully!', 'task_id': task.task_id})
         else:
+            # Log invalid form errors
             return JsonResponse({'error': 'Form data is invalid', 'errors': form.errors}, status=400)
     else:
         form = TaskForm(user=request.user)
         return render(request, 'tasks/create_task.html', {'form': form})
+
 
 @login_required
 def edit_task(request, task_id):
@@ -212,6 +278,48 @@ def update_task_status(request, task_id):
         if form.is_valid():
             form.save()
 
+            view_ticket_url = request.build_absolute_uri(f'/tasks/{task.task_id}/detail/')
+            context = {
+                'ticket': task,
+                'view_ticket_url': view_ticket_url,
+            }
+
+            # Notify about deadline revision
+            if old_deadline != task.revised_completion_date:
+                context['update_message'] = f"The deadline has been revised to {task.revised_completion_date}"
+                if task.assigned_by:
+                    send_email_notification(
+                        subject=f"Deadline Revised: {task.task_id}",
+                        template_name='emails/ticket_deadline_updated.html',
+                        context=context,
+                        recipient_email=task.assigned_by.email,
+                    )
+                if task.assigned_to:
+                    send_email_notification(
+                        subject=f"Deadline Revised: {task.task_id}",
+                        template_name='emails/ticket_deadline_updated.html',
+                        context=context,
+                        recipient_email=task.assigned_to.email,
+                    )
+
+            # Notify about comment updates
+            if old_comments != task.comments_by_assignee:
+                context['update_message'] = f"New comment: {task.comments_by_assignee}"
+                if task.assigned_by:
+                    send_email_notification(
+                        subject=f"Comment Updated: {task.task_id}",
+                        template_name='emails/ticket_comment_updated.html',
+                        context=context,
+                        recipient_email=task.assigned_by.email,
+                    )
+                if task.assigned_to:
+                    send_email_notification(
+                        subject=f"Comment Updated: {task.task_id}",
+                        template_name='emails/ticket_comment_updated.html',
+                        context=context,
+                        recipient_email=task.assigned_to.email,
+                    )
+
             # Log deadline revision
             if old_deadline != task.revised_completion_date:
                 ActivityLog.objects.create(
@@ -235,6 +343,19 @@ def update_task_status(request, task_id):
         form = TaskStatusUpdateForm(instance=task)
 
     return render(request, 'tasks/update_task_status.html', {'task': task, 'form': form})
+
+
+
+
+@login_required
+def send_deadline_reminders(request):
+    send_deadline_reminders_logic()
+    return HttpResponse("Deadline reminders sent!")
+
+@login_required
+def notify_overdue_tasks(request):
+    notify_overdue_tasks_logic()
+    return HttpResponse("Overdue notifications sent!")
 
 @login_required
 def mark_task_completed(request, task_id):

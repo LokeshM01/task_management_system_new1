@@ -28,5 +28,7 @@ urlpatterns = [
     path('metrics/download/', views.download_metrics, name='download_metrics'),
     path('download_activity_log/', views.download_activity_log, name='download_activity_log'),  # New URL for download
     path('reassign_within_department/<str:task_id>/', views.reassign_within_department, name='reassign_within_department'),
+    path('test_deadline_reminders/', views.send_deadline_reminders, name='test_deadline_reminders'),
+    path('test_overdue_notifications/', views.notify_overdue_tasks, name='test_overdue_notifications'),
 
 ]

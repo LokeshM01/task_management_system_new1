@@ -1,0 +1,7 @@
+<p>Hi {{ user.get_full_name }},</p>
+<p>Your task has been successfully created.</p>
+<p><strong>Ticket number:</strong> {{ ticket.task_id }}</p>
+<p><strong>Subject:</strong> {{ ticket.subject }}</p>
+<p><strong>Assigned To:</strong> {{ ticket.assigned_to.get_full_name }}</p>
+<a href="{{ view_ticket_url }}" style="background: #4CAF50; color: white; padding: 10px 15px; text-decoration: none;">View Ticket</a>
+<p>Thank you!<br>Task Management System</p>
