@@ -162,7 +162,7 @@ def create_task(request):
             # Notify the departmental manager (if exists)
             if task.department and hasattr(task.department, 'manager') and task.department.manager:
                 manager_email = task.department.manager.email  # Ensure the manager's email exists
-                view_ticket_url = request.build_absolute_uri(f'/tasks/{task.task_id}/detail/')
+                view_ticket_url = request.build_absolute_uri(f'/tasks/detail/{task.task_id}/')
                 context = {
                     'user': task.department.manager,
                     'ticket': task,
@@ -178,7 +178,7 @@ def create_task(request):
             # Notify the assignee (if assigned)
             if task.assigned_to:
                 assignee_email = task.assigned_to.email
-                view_ticket_url = request.build_absolute_uri(f'/tasks/{task.task_id}/detail/')
+                view_ticket_url = request.build_absolute_uri(f'/tasks/detail/{task.task_id}/')
                 context = {
                     'user': task.assigned_to,
                     'ticket': task,
@@ -193,7 +193,7 @@ def create_task(request):
 
              # Notify the task creator
             creator_email = task.assigned_by.email
-            view_ticket_url = request.build_absolute_uri(f'/tasks/{task.task_id}/detail/')
+            view_ticket_url = request.build_absolute_uri(f'/tasks/detail/{task.task_id}/')
             context = {
                 'user': task.assigned_by,
                 'ticket': task,
@@ -278,7 +278,7 @@ def update_task_status(request, task_id):
         if form.is_valid():
             form.save()
 
-            view_ticket_url = request.build_absolute_uri(f'/tasks/{task.task_id}/detail/')
+            view_ticket_url = request.build_absolute_uri(f'/tasks/detail/{task.task_id}/')
             context = {
                 'ticket': task,
                 'view_ticket_url': view_ticket_url,

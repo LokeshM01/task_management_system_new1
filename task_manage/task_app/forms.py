@@ -30,9 +30,8 @@ class TaskForm(forms.ModelForm):
             elif user_profile.category == 'Executive Management':
                 self.fields['assigned_to'].queryset = User.objects.all()
             else:
-                self.fields['assigned_to'].queryset = User.objects.filter(
-                    userprofile__category='Non-Management'
-                )
+                # Non-management users can assign tasks to Departmental Managers and Executive Managers
+                self.fields['assigned_to'].queryset = User.objects.all()
 
         if not self.fields['assigned_to'].queryset.exists():
             self.fields['assigned_to'].queryset = User.objects.none()
