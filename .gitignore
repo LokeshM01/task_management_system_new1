@@ -4,12 +4,15 @@
 __pycache__/
 # db.sqlite3             <-- Comment this line temporarily
 *.sqlite3
+*.sql
 
 # Ignore virtual environments
 venv/
 env/
 myenv/
 ENV/
+supporting_files/
+attachments/
 env.bak/
 venv.bak/
 

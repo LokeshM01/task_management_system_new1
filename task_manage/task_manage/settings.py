@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'task_app',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -136,3 +137,9 @@ EMAIL_USE_SSL = False
 EMAIL_HOST_USER = 'adminfreshdesk@inditech.co.in'
 EMAIL_HOST_PASSWORD = 'uuxa olpm okkw gfuh'
 DEFAULT_FROM_EMAIL = 'no-reply@yourdomain.com'
+
+# Celery Configuration
+CELERY_BROKER_URL = 'redis://default:9ah3yW7vxIMJNWaWqpWmXiYMBJs4ect5@redis-19233.c305.ap-south-1-1.ec2.redns.redis-cloud.com:19233'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_BACKEND = 'redis://default:9ah3yW7vxIMJNWaWqpWmXiYMBJs4ect5@redis-19233.c305.ap-south-1-1.ec2.redns.redis-cloud.com:19233'

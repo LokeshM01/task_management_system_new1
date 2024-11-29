@@ -1,6 +1,69 @@
-<p>Hi {{ manager.get_full_name }},</p>
-<p>The following ticket is overdue:</p>
-<p><strong>Ticket number:</strong> {{ ticket.task_id }}</p>
-<p><strong>Subject:</strong> {{ ticket.subject }}</p>
-<a href="{{ view_ticket_url }}" style="background: #4CAF50; color: white; padding: 10px 15px; text-decoration: none;">View Ticket</a>
-<p>Thank you!<br>System</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overdue Ticket Notification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #333333;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #555555;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+        strong {
+            color: #333333;
+        }
+        a.button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        a.button:hover {
+            background-color: #45a049;
+        }
+        .footer {
+            margin-top: 20px;
+            color: #888888;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <p>Hi {{ manager.get_full_name }},</p>
+        <p>The following ticket is overdue:</p>
+        <p><strong>Ticket number:</strong> {{ ticket.task_id }}</p>
+        <p><strong>Subject:</strong> {{ ticket.subject }}</p>
+        <a href="{{ view_ticket_url }}" class="button">View Ticket</a>
+        <p>Thank you!<br>System</p>
+        <div class="footer">
+            <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>
