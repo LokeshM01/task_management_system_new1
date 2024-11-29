@@ -58,5 +58,5 @@ coverage.xml
 out/
 
 #ignore folders
-supporting_files/
-attachments/
+/supporting_files/
+/attachments/
