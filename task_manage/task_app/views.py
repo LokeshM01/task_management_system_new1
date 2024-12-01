@@ -427,41 +427,71 @@ def download_activity_log(request):
 
 @login_required
 def metrics(request):
-    # Fetch metrics data based on department and time frame
+    # Fetch metrics data for the last 24 hours
     now = timezone.now()
     last_24_hours = now - timezone.timedelta(hours=24)
 
-    metrics_data = Task.objects.filter(assigned_date__gte=last_24_hours).values(
-    'department__name'
+    metrics_data_24hr = Task.objects.filter(assigned_date__gte=last_24_hours).values(
+        'department__name'
     ).annotate(
         tickets_raised=Count('id'),
-        tickets_received=Count('id', filter=Q(status__in=['In Progress', 'Not Started'])),  # Adjust based on 'received' criteria
+        tickets_received=Count('id', filter=Q(status__in=['In Progress', 'Not Started'])),
         tickets_closed=Count('id', filter=Q(status='Completed')),
         tickets_cancelled=Count('id', filter=Q(status='Cancelled')),
     ).order_by('department__name')
 
-    # Calculate open tickets as specified
-    for data in metrics_data:
+    # Calculate open tickets for last 24 hours
+    for data in metrics_data_24hr:
         data['open_tickets'] = data['tickets_raised'] + data['tickets_received'] - data['tickets_closed'] - data['tickets_cancelled']
 
-    # Total row for the table
-    total_raised = sum(d.get('tickets_raised', 0) for d in metrics_data)
-    total_received = sum(d.get('tickets_received', 0) for d in metrics_data)
-    total_closed = sum(d.get('tickets_closed', 0) for d in metrics_data)
-    total_cancelled = sum(d.get('tickets_cancelled', 0) for d in metrics_data)
-    total_open = sum(d.get('open_tickets', 0) for d in metrics_data)
-    
-    metrics_summary = {
-        'total_raised': total_raised,
-        'total_received': total_received,
-        'total_closed': total_closed,
-        'total_open': total_open,
+    # Total row for the last 24 hours
+    total_raised_24hr = sum(d.get('tickets_raised', 0) for d in metrics_data_24hr)
+    total_received_24hr = sum(d.get('tickets_received', 0) for d in metrics_data_24hr)
+    total_closed_24hr = sum(d.get('tickets_closed', 0) for d in metrics_data_24hr)
+    total_cancelled_24hr = sum(d.get('tickets_cancelled', 0) for d in metrics_data_24hr)
+    total_open_24hr = sum(d.get('open_tickets', 0) for d in metrics_data_24hr)
+
+    metrics_summary_24hr = {
+        'total_raised': total_raised_24hr,
+        'total_received': total_received_24hr,
+        'total_closed': total_closed_24hr,
+        'total_open': total_open_24hr,
     }
 
-    # Return metrics data to the template
+    # Fetch metrics data for all-time
+    metrics_data_all_time = Task.objects.values(
+        'department__name'
+    ).annotate(
+        tickets_raised=Count('id'),
+        tickets_received=Count('id', filter=Q(status__in=['In Progress', 'Not Started'])),
+        tickets_closed=Count('id', filter=Q(status='Completed')),
+        tickets_cancelled=Count('id', filter=Q(status='Cancelled')),
+    ).order_by('department__name')
+
+    # Calculate open tickets for all-time
+    for data in metrics_data_all_time:
+        data['open_tickets'] = data['tickets_raised'] + data['tickets_received'] - data['tickets_closed'] - data['tickets_cancelled']
+
+    # Total row for all-time
+    total_raised_all_time = sum(d.get('tickets_raised', 0) for d in metrics_data_all_time)
+    total_received_all_time = sum(d.get('tickets_received', 0) for d in metrics_data_all_time)
+    total_closed_all_time = sum(d.get('tickets_closed', 0) for d in metrics_data_all_time)
+    total_cancelled_all_time = sum(d.get('tickets_cancelled', 0) for d in metrics_data_all_time)
+    total_open_all_time = sum(d.get('open_tickets', 0) for d in metrics_data_all_time)
+
+    metrics_summary_all_time = {
+        'total_raised': total_raised_all_time,
+        'total_received': total_received_all_time,
+        'total_closed': total_closed_all_time,
+        'total_open': total_open_all_time,
+    }
+
+    # Return both sets of metrics data to the template
     return render(request, 'tasks/metrics.html', {
-        'metrics_data': metrics_data,
-        'metrics_summary': metrics_summary,
+        'metrics_data_24hr': metrics_data_24hr,
+        'metrics_summary_24hr': metrics_summary_24hr,
+        'metrics_data_all_time': metrics_data_all_time,
+        'metrics_summary_all_time': metrics_summary_all_time,
     })
 
 # Download metrics as a CSV file
