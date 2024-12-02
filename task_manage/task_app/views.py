@@ -5,7 +5,7 @@ from .forms import TaskForm
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q,F
 from datetime import datetime, timedelta
 from django.http import JsonResponse
 from django.http import HttpResponse
@@ -434,7 +434,8 @@ def metrics(request):
     metrics_data_24hr = Task.objects.filter(assigned_date__gte=last_24_hours).values(
         'department__name'
     ).annotate(
-        tickets_raised=Count('id'),
+        # Corrected annotation for tickets raised by users in the same department
+        tickets_raised=Count('id', filter=Q(assigned_by__userprofile__department__name=F('department__name'))),
         tickets_received=Count('id', filter=Q(status__in=['In Progress', 'Not Started'])),
         tickets_closed=Count('id', filter=Q(status='Completed')),
         tickets_cancelled=Count('id', filter=Q(status='Cancelled')),
@@ -462,7 +463,8 @@ def metrics(request):
     metrics_data_all_time = Task.objects.values(
         'department__name'
     ).annotate(
-        tickets_raised=Count('id'),
+        # Corrected annotation for tickets raised by users in the same department
+        tickets_raised=Count('id', filter=Q(assigned_by__userprofile__department__name=F('department__name'))),
         tickets_received=Count('id', filter=Q(status__in=['In Progress', 'Not Started'])),
         tickets_closed=Count('id', filter=Q(status='Completed')),
         tickets_cancelled=Count('id', filter=Q(status='Cancelled')),
@@ -493,6 +495,7 @@ def metrics(request):
         'metrics_data_all_time': metrics_data_all_time,
         'metrics_summary_all_time': metrics_summary_all_time,
     })
+
 
 # Download metrics as a CSV file
 @login_required
