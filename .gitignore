@@ -60,7 +60,3 @@ out/
 #ignore folders
 /supporting_files/
 /attachments/
-task_manage/output_file.csv
-task_manage/output_file.csv
-task_manage/passwords.py
-task_manage/users_with_credentials.csv
