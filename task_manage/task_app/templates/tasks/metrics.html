@@ -21,74 +21,51 @@
     <div class="main-content">
         <div class="header">
             <h1>Metrics</h1>
-            <p>Overview of tickets in the last 24 hours and all-time data by department.</p>
+            <p>Overview of tickets raised and received by department, including last 24 hours and all-time data.</p>
         </div>
 
-        <!-- Metrics Table for Last 24 Hours -->
+        <!-- Combined Metrics Table -->
         <div class="metrics-table">
-            <h3>Metrics (Last 24 Hours)</h3>
+            <h3>Ticket Metrics Overview</h3>
             <table>
                 <thead>
                     <tr>
                         <th>Department</th>
-                        <th>Tickets Raised</th>
-                        <th>Tickets Received</th>
-                        <th>Tickets Closed</th>
-                        <th>Open Tickets</th>
+                        <th>Open Tickets Raised</th>
+                        <th>Open Tickets Received</th>
+                        <th>Tickets Raised in Last 24 Hours</th>
+                        <th>Tickets Received in Last 24 Hours</th>
+                        <th>Older Open Tickets</th>
+                        <th>Pending Tickets (Bifurcation by Department)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for data in metrics_data_24hr %}
+                    {% for department in metrics_data %}
                     <tr>
-                        <td>{{ data.department__name }}</td>
-                        <td>{{ data.tickets_raised }}</td>
-                        <td>{{ data.tickets_received }}</td>
-                        <td>{{ data.tickets_closed }}</td>
-                        <td>{{ data.open_tickets }}</td>
+                        <td>{{ department.department__name }}</td>
+                        <td>{{ department.open_tickets_raised }}</td>
+                        <td>{{ department.open_tickets_received }}</td>
+                        <td>{{ department.tickets_raised_last_24hr }}</td>
+                        <td>{{ department.tickets_received_last_24hr }}</td>
+                        <td>{{ department.older_open_tickets }}</td>
+                        <td>
+                            <ul class="pending-list">
+                                {% for dept_name, count in department.pending_tickets_bifurcation.items %}
+                                    <li>{{ dept_name }}: {{ count }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
                     </tr>
                     {% endfor %}
                     <!-- Total Row for 24 Hours -->
                     <tr class="total-row">
                         <td><strong>Total</strong></td>
-                        <td>{{ metrics_summary_24hr.total_raised }}</td>
-                        <td>{{ metrics_summary_24hr.total_received }}</td>
-                        <td>{{ metrics_summary_24hr.total_closed }}</td>
-                        <td>{{ metrics_summary_24hr.total_open }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Metrics Table for All Time -->
-        <div class="metrics-table">
-            <h3>Metrics (All Time)</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Department</th>
-                        <th>Tickets Raised</th>
-                        <th>Tickets Received</th>
-                        <th>Tickets Closed</th>
-                        <th>Open Tickets</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for data in metrics_data_all_time %}
-                    <tr>
-                        <td>{{ data.department__name }}</td>
-                        <td>{{ data.tickets_raised }}</td>
-                        <td>{{ data.tickets_received }}</td>
-                        <td>{{ data.tickets_closed }}</td>
-                        <td>{{ data.open_tickets }}</td>
-                    </tr>
-                    {% endfor %}
-                    <!-- Total Row for All Time -->
-                    <tr class="total-row">
-                        <td><strong>Total</strong></td>
-                        <td>{{ metrics_summary_all_time.total_raised }}</td>
-                        <td>{{ metrics_summary_all_time.total_received }}</td>
-                        <td>{{ metrics_summary_all_time.total_closed }}</td>
-                        <td>{{ metrics_summary_all_time.total_open }}</td>
+                        <td>{{ metrics_summary.total_open_raised }}</td>
+                        <td>{{ metrics_summary.total_open_received }}</td>
+                        <td>{{ metrics_summary.total_raised_last_24hr }}</td>
+                        <td>{{ metrics_summary.total_received_last_24hr }}</td>
+                        <td>{{ metrics_summary.total_older_open_tickets }}</td>
+                        <td></td>
                     </tr>
                 </tbody>
             </table>
@@ -118,6 +95,13 @@
     .metrics-table .total-row td { font-weight: bold; background-color: #f4f4f9; }
     .download-btn { margin-top: 23px;padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
     .download-btn:hover { background-color: #388E3C; }
+    .pending-list {
+        list-style-type: none;
+        padding: 0;
+    }
+    .pending-list li {
+        margin-bottom: 5px;
+    }
 </style>
 
 {% endblock %}

@@ -429,95 +429,86 @@ from django.db.models import F, Q, Count
 
 @login_required
 def metrics(request):
-    # Fetch metrics data for the last 24 hours
+    # Get the current time and the last 24 hours time
     now = timezone.now()
     last_24_hours = now - timezone.timedelta(hours=24)
 
-    # Metrics for Last 24 Hours
-    metrics_data_24hr = Task.objects.filter(assigned_date__gte=last_24_hours).values(
-        'department__name'
-    ).annotate(
-        tickets_received=Count('id', filter=Q(status__in=['In Progress', 'Not Started'])),
-        tickets_closed=Count('id', filter=Q(status='Completed')),
-        tickets_cancelled=Count('id', filter=Q(status='Cancelled')),
+    # Metrics for Last 24 Hours (raised and received)
+    metrics_data = Task.objects.values('department__name').annotate(
+        tickets_received_last_24hr=Count('id', filter=Q(assigned_to__userprofile__department__name=F('department__name'), assigned_date__gte=last_24_hours)),
+        open_tickets_received=Count('id', filter=Q(assigned_to__userprofile__department__name=F('department__name'), status__in=['In Progress', 'Not Started'])),
     ).order_by('department__name')
 
-    # Initialize open tickets for the last 24 hours
-    for data in metrics_data_24hr:
-        data['open_tickets'] = data['tickets_received'] - data['tickets_closed'] - data['tickets_cancelled']
-
-    # For each department row, count the tickets raised by users from that department
-    for data in metrics_data_24hr:
+    # Add all-time data for raised and received tickets
+    for data in metrics_data:
         department_name = data['department__name']
-        
-        # Count the tickets raised by users from the department
-        tickets_raised = Task.objects.filter(
-            assigned_by__userprofile__department__name=department_name
+
+        tickets_raised_all_time = Task.objects.filter(
+            assigned_by__userprofile__department__name=department_name,
+            status__in=['In Progress', 'Not Started']
         ).count()
-        
-        # Add the count of tickets raised for the department row
-        data['tickets_raised'] = tickets_raised
+
+        tickets_raised_last_24hr = Task.objects.filter(
+            assigned_by__userprofile__department__name=department_name,
+            assigned_date__gte=last_24_hours
+        ).count()
+
+        data['tickets_raised_last_24hr'] = tickets_raised_last_24hr
+
+        tickets_received_all_time = Task.objects.filter(
+            assigned_to__userprofile__department__name=department_name
+        ).count()
+
+        data['open_tickets_raised'] = tickets_raised_all_time
+        data['open_tickets_received'] = tickets_received_all_time
+        data['older_open_tickets'] = data['open_tickets_received'] - data['tickets_received_last_24hr']
+
+    # Calculate Pending Tickets by Department (Bifurcation)
+    pending_tickets = Task.objects.values(
+        'department__name', 'assigned_by__userprofile__department__name'
+    ).annotate(
+        pending_count=Count('id', filter=Q(status__in=['In Progress', 'Not Started','Pending','Processing','Delay Processing','Waiting for confirmation']))
+    )
+
+    # Group pending tickets by department
+    pending_tickets_by_department = {}
+    for ticket in pending_tickets:
+        if ticket['department__name'] not in pending_tickets_by_department:
+            pending_tickets_by_department[ticket['department__name']] = {}
+        pending_tickets_by_department[ticket['department__name']][ticket['assigned_by__userprofile__department__name']] = ticket['pending_count']
+
+    # Add the pending tickets bifurcation to each department's data
+    for data in metrics_data:
+        department_name = data['department__name']
+        data['pending_tickets_bifurcation'] = pending_tickets_by_department.get(department_name, {})
 
     # Total row for the last 24 hours
-    total_raised_24hr = sum(d.get('tickets_raised', 0) for d in metrics_data_24hr)
-    total_received_24hr = sum(d.get('tickets_received', 0) for d in metrics_data_24hr)
-    total_closed_24hr = sum(d.get('tickets_closed', 0) for d in metrics_data_24hr)
-    total_cancelled_24hr = sum(d.get('tickets_cancelled', 0) for d in metrics_data_24hr)
-    total_open_24hr = sum(d.get('open_tickets', 0) for d in metrics_data_24hr)
+    total_raised_last_24hr = sum(d.get('tickets_raised_last_24hr', 0) for d in metrics_data)
+    total_received_last_24hr = sum(d.get('tickets_received_last_24hr', 0) for d in metrics_data)
+    total_open_raised = sum(d.get('open_tickets_raised', 0) for d in metrics_data)
+    total_open_received = sum(d.get('open_tickets_received', 0) for d in metrics_data)
+    total_older_open_tickets = sum(d.get('older_open_tickets', 0) for d in metrics_data)
 
-    metrics_summary_24hr = {
-        'total_raised': total_raised_24hr,
-        'total_received': total_received_24hr,
-        'total_closed': total_closed_24hr,
-        'total_open': total_open_24hr,
+    # Calculate Total Pending Tickets for the summary
+    total_pending_tickets = 0
+    for department in metrics_data:
+        pending_bifurcation = department.get('pending_tickets_bifurcation', {})
+        total_pending_tickets += sum(pending_bifurcation.values())
+
+    metrics_summary = {
+        'total_raised_last_24hr': total_raised_last_24hr,
+        'total_received_last_24hr': total_received_last_24hr,
+        'total_open_raised': total_open_raised,
+        'total_open_received': total_open_received,
+        'total_older_open_tickets': total_older_open_tickets,
+        'total_pending_tickets': total_pending_tickets,  # Include total pending tickets in the summary
     }
 
-    # Metrics for All Time
-    metrics_data_all_time = Task.objects.values(
-        'department__name'
-    ).annotate(
-        tickets_received=Count('id', filter=Q(status__in=['In Progress', 'Not Started'])),
-        tickets_closed=Count('id', filter=Q(status='Completed')),
-        tickets_cancelled=Count('id', filter=Q(status='Cancelled')),
-    ).order_by('department__name')
-
-    # Initialize open tickets for all-time
-    for data in metrics_data_all_time:
-        data['open_tickets'] = data['tickets_received'] - data['tickets_closed'] - data['tickets_cancelled']
-
-    # For each department row, count the tickets raised by users from that department (all-time)
-    for data in metrics_data_all_time:
-        department_name = data['department__name']
-        
-        # Count the tickets raised by users from the department (all-time)
-        tickets_raised = Task.objects.filter(
-            assigned_by__userprofile__department__name=department_name
-        ).count()
-        
-        # Add the count of tickets raised for the department row
-        data['tickets_raised'] = tickets_raised
-
-    # Total row for all-time
-    total_raised_all_time = sum(d.get('tickets_raised', 0) for d in metrics_data_all_time)
-    total_received_all_time = sum(d.get('tickets_received', 0) for d in metrics_data_all_time)
-    total_closed_all_time = sum(d.get('tickets_closed', 0) for d in metrics_data_all_time)
-    total_cancelled_all_time = sum(d.get('tickets_cancelled', 0) for d in metrics_data_all_time)
-    total_open_all_time = sum(d.get('open_tickets', 0) for d in metrics_data_all_time)
-
-    metrics_summary_all_time = {
-        'total_raised': total_raised_all_time,
-        'total_received': total_received_all_time,
-        'total_closed': total_closed_all_time,
-        'total_open': total_open_all_time,
-    }
-
-    # Return both sets of metrics data to the template
     return render(request, 'tasks/metrics.html', {
-        'metrics_data_24hr': metrics_data_24hr,
-        'metrics_summary_24hr': metrics_summary_24hr,
-        'metrics_data_all_time': metrics_data_all_time,
-        'metrics_summary_all_time': metrics_summary_all_time,
+        'metrics_data': metrics_data,
+        'metrics_summary': metrics_summary,
     })
+
 
 
 
