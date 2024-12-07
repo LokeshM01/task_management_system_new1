@@ -436,7 +436,7 @@ def metrics(request):
     # Metrics for Last 24 Hours (raised and received)
     metrics_data = Task.objects.values('department__name').annotate(
         tickets_received_last_24hr=Count('id', filter=Q(assigned_to__userprofile__department__name=F('department__name'), assigned_date__gte=last_24_hours)),
-        open_tickets_received=Count('id', filter=Q(assigned_to__userprofile__department__name=F('department__name'), status__in=['In Progress', 'Not Started'])),
+        open_tickets_received=Count('id', filter=Q(assigned_to__userprofile__department__name=F('department__name'), status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing'])),
     ).order_by('department__name')
 
     # Add all-time data for raised and received tickets
@@ -445,7 +445,7 @@ def metrics(request):
 
         tickets_raised_all_time = Task.objects.filter(
             assigned_by__userprofile__department__name=department_name,
-            status__in=['In Progress', 'Not Started']
+            status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing']
         ).count()
 
         tickets_raised_last_24hr = Task.objects.filter(
@@ -456,7 +456,8 @@ def metrics(request):
         data['tickets_raised_last_24hr'] = tickets_raised_last_24hr
 
         tickets_received_all_time = Task.objects.filter(
-            assigned_to__userprofile__department__name=department_name
+            assigned_to__userprofile__department__name=department_name,
+            status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing']
         ).count()
 
         data['open_tickets_raised'] = tickets_raised_all_time

@@ -118,6 +118,12 @@
     document.getElementById('createTaskForm').onsubmit = function(event) {
         event.preventDefault();  // Prevent page reload
         const formData = new FormData(this);
+        const submitButton = document.querySelector('.submit-btn'); // Select the submit button
+        const successPopup = document.getElementById("successPopup");
+
+        // Disable the submit button and show a loading message
+        submitButton.disabled = true;
+        submitButton.textContent = "Creating Task..."; // Optional: Change button text to indicate processing
 
         fetch("{% url 'create_task' %}", {
             method: "POST",
@@ -127,13 +133,19 @@
         .then(response => response.json())
         .then(data => {
             if (data.message) {
-                document.getElementById("successPopup").style.display = "flex"; // Show success popup
+                // Show success popup
+                successPopup.style.display = "flex"; 
                 document.getElementById("createTaskForm").reset(); // Reset form
             } else if (data.error) {
                 alert("Error: " + data.errors); // Display errors if any
             }
         })
-        .catch(error => console.error("Error:", error));
+        .catch(error => console.error("Error:", error))
+        .finally(() => {
+            // Re-enable the submit button and reset its text after task is created or an error occurs
+            submitButton.disabled = false;
+            submitButton.textContent = "Create Task"; // Reset the button text
+        });
     };
 
     function closePopup() {
