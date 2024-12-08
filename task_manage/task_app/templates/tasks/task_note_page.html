@@ -2,23 +2,109 @@
 {% load static %}
 
 {% block content %}
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    h2 {
+      color: #4CAF50;
+      font-size: 28px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .task-note-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Form elements and layout */
+    label {
+      font-weight: bold;
+      margin-bottom: 5px;
+      display: inline-block;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+      resize: vertical;
+      margin-bottom: 15px;
+    }
+
+    button {
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .task-note-container .reassign-btn-container {
+      margin-top: 20px;
+    }
+
+    .task-detail-link {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 18px;
+      color: #4CAF50;
+      text-decoration: none;
+    }
+
+    .task-detail-link:hover {
+      text-decoration: underline;
+      color: #388E3C;
+    }
+  </style>
+
+  <!-- Back to Task Detail Link -->
+  <a href="{% url 'task_detail' task.task_id %}" class="task-detail-link">← Back to Task Details</a>
+
+  <h2>Task Note for Task ID: {{ task.task_id }}</h2>
+  
   <div class="task-note-container">
-    <h2>Task Note for Task ID: {{ task.task_id }}</h2>
-    
+    <!-- Task Note Update Form -->
     <form method="post">
       {% csrf_token %}
-      <label for="note">Add a Note:</label>
-      <textarea id="note" name="note" rows="4" cols="50" placeholder="Enter your note here...">{{ task.notes }}</textarea><br><br>
-      <button type="submit">Save Note</button>
+      
+      <!-- Note Textarea Field -->
+      <div class="form-group">
+        <label for="note">Add a Note:</label>
+        <textarea id="note" name="note" rows="4" placeholder="Enter your note here...">{{ task.notes }}</textarea>
+      </div>
+      
+      <!-- Save Note Button -->
+      <button type="submit">Save Note And Reassign</button>
     </form>
 
+    <!-- Reassign Task Button
     <div class="reassign-btn-container">
       <form method="post" action="{% url 'reassign_task' task.task_id %}">
         {% csrf_token %}
         <button type="submit">Reassign to Creator</button>
       </form>
-    </div>
-    
-    <a href="{% url 'task_detail' task.task_id %}">Back to Task Details</a>
+    </div> -->
+
+   
   </div>
 {% endblock %}
