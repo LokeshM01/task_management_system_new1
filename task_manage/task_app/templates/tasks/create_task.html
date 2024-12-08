@@ -5,10 +5,11 @@
 <div class="task-manager-container">
     <!-- Home Icon to Redirect to Home Page -->
     <div class="home-icon">
-        <a href="{% if user.userprofile.category == "Departmental Manager" %}{% url 'home' %}{% else %}{% url 'assigned_to_me' %}{% endif %}">
+        <a href="{% if user.userprofile.category == 'Departmental Manager' %}{% url 'home' %}{% else %}{% url 'assigned_to_me' %}{% endif %}">
             <img src="{% static 'task_app/images/home-icon.svg' %}" alt="Home" class="icon">
         </a>
     </div>
+
     <h2>Create a Task</h2>
     <hr>
 
@@ -76,6 +77,34 @@
                 {{ form.attach_file }}
             </div>
 
+            <!-- Recurring Task Options -->
+            <div class="form-group">
+                <label for="id_is_recurring">Is this a recurring task?</label>
+                <input type="checkbox" id="id_is_recurring" name="is_recurring">
+            </div>
+
+            <!-- Recurrence Type (Daily/Weekly) -->
+            <div class="form-group recurrence-options" style="display: none;">
+                <label for="id_recurrence_type">Recurrence Type:</label>
+                <select name="recurrence_type" id="id_recurrence_type">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                </select>
+            </div>
+
+            <!-- Number of Tasks -->
+            <div class="form-group recurrence-options" style="display: none;">
+                <label for="id_recurrence_count">Number of Tasks to Create:</label>
+                <input type="number" id="id_recurrence_count" name="recurrence_count" min="1" value="1">
+            </div>
+
+            <!-- Recurrence Duration (Days/Weeks) -->
+            <div class="form-group recurrence-options" style="display: none;">
+                <label for="id_recurrence_duration">Recurrence Duration:</label>
+                <input type="number" id="id_recurrence_duration" name="recurrence_duration" min="1" value="1">
+                <!-- <span class="recurrence-unit">Days</span> You can toggle between 'Days' or 'Weeks' based on recurrence type -->
+            </div>
+            
             <!-- Submit Button -->
             <button type="submit" class="submit-btn">Create Task</button>
         </form>
@@ -151,5 +180,20 @@
     function closePopup() {
         document.getElementById("successPopup").style.display = "none";
     }
+
+    // Toggle recurrence options visibility based on checkbox
+    document.getElementById('id_is_recurring').addEventListener('change', function() {
+        const recurrenceOptions = document.querySelectorAll('.recurrence-options');
+        if (this.checked) {
+            recurrenceOptions.forEach(function(option) {
+                option.style.display = 'block';
+            });
+        } else {
+            recurrenceOptions.forEach(function(option) {
+                option.style.display = 'none';
+            });
+        }
+    });
 </script>
+
 {% endblock %}
