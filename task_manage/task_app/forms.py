@@ -12,7 +12,8 @@ class TaskForm(forms.ModelForm):
         model = Task
         fields = [
             'assigned_to', 'deadline', 'ticket_type', 'priority',
-            'department', 'subject', 'request_details', 'attach_file', 'status'
+            'department', 'subject', 'request_details', 'attach_file', 'status',
+            'is_recurring', 'recurrence_type', 'recurrence_count', 'recurrence_duration'
         ]
         widgets = {
             'deadline': forms.DateInput(attrs={'type': 'date'}),
@@ -30,11 +31,20 @@ class TaskForm(forms.ModelForm):
             elif user_profile.category == 'Executive Management':
                 self.fields['assigned_to'].queryset = User.objects.all()
             else:
-                # Non-management users can assign tasks to Departmental Managers and Executive Managers
                 self.fields['assigned_to'].queryset = User.objects.all()
 
         if not self.fields['assigned_to'].queryset.exists():
             self.fields['assigned_to'].queryset = User.objects.none()
+
+        # Show recurrence fields only if the task is recurring
+        if self.instance.is_recurring:
+            self.fields['recurrence_type'].widget.attrs['disabled'] = False
+            self.fields['recurrence_count'].widget.attrs['disabled'] = False
+            self.fields['recurrence_duration'].widget.attrs['disabled'] = False
+        else:
+            self.fields['recurrence_type'].widget.attrs['disabled'] = True
+            self.fields['recurrence_count'].widget.attrs['disabled'] = True
+            self.fields['recurrence_duration'].widget.attrs['disabled'] = True
 
 
 class TaskStatusUpdateForm(forms.ModelForm):

@@ -18,6 +18,7 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.timezone import now
 from .tasks import send_deadline_reminders_logic, notify_overdue_tasks_logic
+from datetime import date
 
 def send_email_notification(subject, template_name, context, recipient_email):
     """Utility function to send email notifications."""
@@ -34,7 +35,7 @@ def send_email_notification(subject, template_name, context, recipient_email):
 @login_required
 def home(request):
     user_profile = UserProfile.objects.get(user=request.user)
-
+    today = date.today()
     if user_profile.category == 'Departmental Manager':
         # Fetch all tasks related to the department of the manager
         department = user_profile.department
@@ -42,8 +43,10 @@ def home(request):
             # Tasks created by members of the manager's department
             Q(assigned_by__userprofile__department=department) |
             # Tasks assigned to members of the manager's department
-            Q(assigned_to__userprofile__department=department)
-        )
+            Q(assigned_to__userprofile__department=department),
+
+            assigned_date__lte=today
+        ).order_by('-assigned_date')
         return render(request, 'tasks/home.html', {
             'tasks': tasks,
             'departments': Department.objects.all(),
@@ -54,8 +57,9 @@ def home(request):
 
 @login_required
 def assigned_to_me(request):
+    today = date.today()
     # Filter tasks where the assigned_to field matches the current user
-    tasks = Task.objects.filter(assigned_to=request.user)
+    tasks = Task.objects.filter(assigned_to=request.user, assigned_date__lte=today).order_by('-assigned_date')
 
     # Passing task category functional choices (department in this case) for filtering
     functional_categories = Task.FUNCTIONAL_CATEGORIES  # Assuming Task.FUNCTIONAL_CATEGORIES holds department choices
@@ -69,8 +73,10 @@ def assigned_to_me(request):
 
 @login_required
 def assigned_by_me(request):
+    today = date.today()
+    tasks = Task.objects.filter(assigned_by=request.user, assigned_date__lte=today).order_by('-assigned_date')
     # Fetch tasks where the logged-in user is the assigner
-    tasks = Task.objects.filter(assigned_by=request.user)
+    # tasks = Task.objects.filter(assigned_by=request.user)
 
     # Passing task category functional choices (department in this case) for filtering
     functional_categories = Task.FUNCTIONAL_CATEGORIES  # Assuming Task.FUNCTIONAL_CATEGORIES holds department choices
@@ -157,6 +163,7 @@ def create_task(request):
         if form.is_valid():
             task = form.save(commit=False)
             task.assigned_by = request.user  # Automatically set the assigned_by field
+            task.assigned_date = date.today()
             task.save()
 
             # Notify the departmental manager (if exists)
