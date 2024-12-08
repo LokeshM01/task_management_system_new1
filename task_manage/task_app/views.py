@@ -464,31 +464,37 @@ def metrics(request):
         data['open_tickets_received'] = tickets_received_all_time
         data['older_open_tickets'] = data['open_tickets_received'] - data['tickets_received_last_24hr']
 
-    # Calculate Pending Tickets by Department (Bifurcation)
-    pending_tickets = Task.objects.values(
-        'department__name', 'assigned_by__userprofile__department__name'
-    ).annotate(
-        pending_count=Count('id', filter=Q(status__in=['In Progress', 'Not Started','Pending','Processing','Delay Processing','Waiting for confirmation']))
-    )
-
-    # Group pending tickets by department
-    pending_tickets_by_department = {}
-    for ticket in pending_tickets:
-        if ticket['department__name'] not in pending_tickets_by_department:
-            pending_tickets_by_department[ticket['department__name']] = {}
-        pending_tickets_by_department[ticket['department__name']][ticket['assigned_by__userprofile__department__name']] = ticket['pending_count']
-
-    # Add the pending tickets bifurcation to each department's data
     for data in metrics_data:
         department_name = data['department__name']
-        data['pending_tickets_bifurcation'] = pending_tickets_by_department.get(department_name, {})
+
+        # Filter tasks where assigned_to department matches the current department
+        all_task_of_this_dept = Task.objects.filter(
+            assigned_to__userprofile__department__name=department_name,
+            status__in=['In Progress', 'Not Started','Pending','Processing','Delay Processing','Waiting for confirmation'],
+            assigned_date__lt=last_24_hours 
+        )
+
+        # Create a map to store pending tickets count by assigned_by department
+        pending_by_dept = {}
+
+        # Loop through tasks and populate pending_by_dept map
+        for task in all_task_of_this_dept:
+            assignor_dept_name = task.assigned_by.userprofile.department.name  # Updated variable name
+
+            # Increment the pending ticket count for the assignor department
+            if assignor_dept_name not in pending_by_dept:
+                pending_by_dept[assignor_dept_name] = 0
+            pending_by_dept[assignor_dept_name] += 1
+
+        # Set the pending_by_dept map as the bifurcation value
+        data['pending_tickets_bifurcation'] = pending_by_dept
 
     # Total row for the last 24 hours
     total_raised_last_24hr = sum(d.get('tickets_raised_last_24hr', 0) for d in metrics_data)
     total_received_last_24hr = sum(d.get('tickets_received_last_24hr', 0) for d in metrics_data)
     total_open_raised = sum(d.get('open_tickets_raised', 0) for d in metrics_data)
     total_open_received = sum(d.get('open_tickets_received', 0) for d in metrics_data)
-    total_older_open_tickets = sum(d.get('older_open_tickets', 0) for d in metrics_data)
+    total_older_open_tickets = sum(d.get('older_open_tickets', []) for d in metrics_data)  # Count the number of tasks
 
     # Calculate Total Pending Tickets for the summary
     total_pending_tickets = 0
@@ -509,33 +515,123 @@ def metrics(request):
         'metrics_data': metrics_data,
         'metrics_summary': metrics_summary,
     })
+    
 
 
 
 
 
 # Download metrics as a CSV file
+
 @login_required
 def download_metrics(request):
-    # Prepare data for CSV download
+    # Get the current time and the last 24 hours time
     now = timezone.now()
     last_24_hours = now - timezone.timedelta(hours=24)
 
-    metrics_data = Task.objects.filter(assigned_date__gte=last_24_hours).values(
-        'department__name'
-    ).annotate(
-        tickets_raised=Count('id'),
-        tickets_received=Count('id'),
-        tickets_closed=Count('id', filter=Q(status='Completed')),
-        open_tickets=Count('id', filter=Q(status='Open'))
+    # Metrics for Last 24 Hours (raised and received)
+    metrics_data = Task.objects.values('department__name').annotate(
+        tickets_received_last_24hr=Count('id', filter=Q(assigned_to__userprofile__department__name=F('department__name'), assigned_date__gte=last_24_hours)),
+        open_tickets_received=Count('id', filter=Q(assigned_to__userprofile__department__name=F('department__name'), status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing'])),
     ).order_by('department__name')
 
-    df = pd.DataFrame(metrics_data)
+    # Add all-time data for raised and received tickets
+    for data in metrics_data:
+        department_name = data['department__name']
+
+        tickets_raised_all_time = Task.objects.filter(
+            assigned_by__userprofile__department__name=department_name,
+            status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing']
+        ).count()
+
+        tickets_raised_last_24hr = Task.objects.filter(
+            assigned_by__userprofile__department__name=department_name,
+            assigned_date__gte=last_24_hours
+        ).count()
+
+        data['tickets_raised_last_24hr'] = tickets_raised_last_24hr
+
+        tickets_received_all_time = Task.objects.filter(
+            assigned_to__userprofile__department__name=department_name,
+            status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing']
+        ).count()
+
+        data['open_tickets_raised'] = tickets_raised_all_time
+        data['open_tickets_received'] = tickets_received_all_time
+
+        # Get older open tickets with task data
+        older_open_tickets_data = Task.objects.filter(
+            assigned_to__userprofile__department__name=department_name,
+            status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing'],
+            assigned_date__lt=last_24_hours
+        )
+        data['older_open_tickets'] = older_open_tickets_data  # Storing actual task data
+
+    # Add Pending Tickets by Department (Bifurcation)
+    for data in metrics_data:
+        department_name = data['department__name']
+
+        # Filter tasks where assigned_to department matches the current department
+        all_task_of_this_dept = Task.objects.filter(
+            assigned_to__userprofile__department__name=department_name,
+            status__in=['In Progress', 'Not Started','Pending','Processing','Delay Processing','Waiting for confirmation'],
+            assigned_date__lt=last_24_hours
+        )
+
+        # Create a map to store pending tickets count by assigned_by department
+        pending_by_dept = {}
+
+        # Loop through tasks and populate pending_by_dept map
+        for task in all_task_of_this_dept:
+            assignor_dept_name = task.assigned_by.userprofile.department.name  # Updated variable name
+
+            # Increment the pending ticket count for the assignor department
+            if assignor_dept_name not in pending_by_dept:
+                pending_by_dept[assignor_dept_name] = 0
+            pending_by_dept[assignor_dept_name] += 1
+
+        # Set the pending_by_dept map as the bifurcation value
+        data['pending_tickets_bifurcation'] = pending_by_dept
+
+    # Prepare CSV Response
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="metrics.csv"'
-    df.to_csv(path_or_buf=response, index=False)
+    response['Content-Disposition'] = 'attachment; filename="metrics_data.csv"'
+
+    writer = csv.writer(response)
+
+    # Writing the header row
+    writer.writerow([
+        'Department Name',
+        'Tickets Received Last 24hr',
+        'Open Tickets Received',
+        'Tickets Raised Last 24hr',
+        'Open Tickets Raised',
+        'Older Open Tickets',
+        'Pending Tickets Bifurcation'
+    ])
+
+    # Writing data rows
+    for data in metrics_data:
+        department_name = data['department__name']
+        tickets_received_last_24hr = data['tickets_received_last_24hr']
+        open_tickets_received = data['open_tickets_received']
+        tickets_raised_last_24hr = data['tickets_raised_last_24hr']
+        open_tickets_raised = data['open_tickets_raised']
+        older_open_tickets = len(data['older_open_tickets'])  # Assuming this is a list of task objects
+        pending_tickets_bifurcation = str(data['pending_tickets_bifurcation'])  # Convert to string for CSV format
+
+        writer.writerow([
+            department_name,
+            tickets_received_last_24hr,
+            open_tickets_received,
+            tickets_raised_last_24hr,
+            open_tickets_raised,
+            older_open_tickets,
+            pending_tickets_bifurcation
+        ])
 
     return response
+
 
 @login_required
 def reassign_within_department(request, task_id):
