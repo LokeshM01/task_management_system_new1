@@ -272,7 +272,7 @@ def update_task_status(request, task_id):
 
     old_deadline = task.revised_completion_date
     old_comments = task.comments_by_assignee
-
+    initial_deadline=task.deadline
     if request.method == 'POST':
         form = TaskStatusUpdateForm(request.POST, instance=task)
         if form.is_valid():
@@ -326,7 +326,7 @@ def update_task_status(request, task_id):
                     action='deadline_revised',
                     user=request.user,
                     task=task,
-                    description=f"Deadline revised from {old_deadline} to {task.revised_completion_date}"
+                    description=f"Deadline revised from {initial_deadline} to {task.revised_completion_date}"
                 )
 
             # Log comment addition
@@ -377,18 +377,46 @@ def reassign_task(request, task_id):
     if task.assigned_to != request.user:
         raise PermissionDenied("Only the assignee can reassign the task back to the creator.")
 
-    task.assigned_to = task.assigned_by
-    task.save()
+    
 
-    # Log the reassignment
-    ActivityLog.objects.create(
-        action='assigned',
-        user=request.user,
-        task=task,
-        description=f"Task reassigned from {old_assignee.username} to {task.assigned_to.username}"
-    )
+    # Redirect to a new page where user can add a note
+    return redirect('task_note_page', task_id=task.task_id)  # Assuming 'task_note_page' is the new view for adding notes
 
-    return redirect('assigned_to_me')
+
+@login_required
+def task_note_page(request, task_id):
+    task = get_object_or_404(Task, task_id=task_id)
+    old_assignee = task.assigned_to
+    if task.assigned_to != request.user:
+        raise PermissionDenied("You can only add notes to tasks that are assigned to you.")
+
+    # Handle note addition
+    if request.method == 'POST':
+        note = request.POST.get('note')
+        task.notes = note
+        
+
+        task.assigned_to = task.assigned_by
+        task.save()
+
+        # Log the reassignment
+        ActivityLog.objects.create(
+            action='assigned',
+            user=request.user,
+            task=task,
+            description=f"Task reassigned from {old_assignee.username} to {task.assigned_to.username}"
+        )
+
+        # Log the note addition
+        ActivityLog.objects.create(
+            action='comment_added',
+            user=request.user,
+            task=task,
+            description=f"Note added by {request.user.username}: {note}"
+        )
+        return redirect('task_detail', task_id=task.task_id)  # Redirect back to task detail page
+
+    return render(request, 'tasks/task_note_page.html', {'task': task})
 
 @login_required
 def dashboard(request):

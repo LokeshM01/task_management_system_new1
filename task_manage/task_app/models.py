@@ -72,6 +72,7 @@ class Task(models.Model):
     attach_file = models.FileField(upload_to='attachments/', blank=True, null=True)
     revised_completion_date = models.DateField(null=True, blank=True)  # Optional revised deadline
     comments_by_assignee = models.TextField(blank=True, null=True) 
+    notes = models.TextField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.task_id:

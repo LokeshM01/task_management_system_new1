@@ -121,6 +121,13 @@
       No comments yet
     {% endif %}
   </p>
+  <p><strong>Note by Assignee:</strong> 
+    {% if task.notes %}
+      {{ task.notes }}
+    {% else %}
+      No note from assignee
+    {% endif %}
+  </p>
 
   <!-- Display action links -->
   <div class="task-links">

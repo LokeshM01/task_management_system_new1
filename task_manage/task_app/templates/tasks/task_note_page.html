@@ -1,0 +1,24 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+
+{% block content %}
+  <div class="task-note-container">
+    <h2>Task Note for Task ID: {{ task.task_id }}</h2>
+    
+    <form method="post">
+      {% csrf_token %}
+      <label for="note">Add a Note:</label>
+      <textarea id="note" name="note" rows="4" cols="50" placeholder="Enter your note here...">{{ task.notes }}</textarea><br><br>
+      <button type="submit">Save Note</button>
+    </form>
+
+    <div class="reassign-btn-container">
+      <form method="post" action="{% url 'reassign_task' task.task_id %}">
+        {% csrf_token %}
+        <button type="submit">Reassign to Creator</button>
+      </form>
+    </div>
+    
+    <a href="{% url 'task_detail' task.task_id %}">Back to Task Details</a>
+  </div>
+{% endblock %}
