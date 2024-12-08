@@ -27,34 +27,23 @@
     margin-bottom: 20px;
   }
 
-  .task-detail-container p {
+  /* Flexbox layout for headings and answers */
+  .task-detail-container .task-info {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+  }
+
+  .task-detail-container .task-info .task-label {
+    font-weight: bold;
+    width: 200px; /* Fixed width for labels */
+    margin-right: 20px;
+  }
+
+  .task-detail-container .task-info .task-answer {
+    flex-grow: 1;
     font-size: 16px;
-    margin: 10px 0;
-  }
-
-  h3 {
-    color: #333;
-    font-size: 22px;
-    margin-bottom: 10px;
-  }
-
-  a {
-    color: #1ABC9C;
-    text-decoration: none;
-    padding: 10px 15px;
-    background-color: #34495E;
-    color: white;
-    border-radius: 4px;
-    display: inline-block;
-    margin-top: 10px;
-  }
-
-  a:hover {
-    background-color: #1ABC9C;
-  }
-
-  .task-links {
-    margin-top: 20px;
+    line-height: 1.5;
   }
 
   /* Home Icon Styling */
@@ -75,12 +64,43 @@
     cursor: pointer;
     filter: brightness(0) saturate(100%) invert(40%) sepia(80%) saturate(300%) hue-rotate(70deg) brightness(90%) contrast(100%);
   }
+
+  /* Button Styling */
+  a {
+    color: #1ABC9C;
+    text-decoration: none;
+    padding: 10px 15px;
+    background-color: #34495E;
+    color: white;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 10px;
+  }
+
+  a:hover {
+    background-color: #1ABC9C;
+  }
+
+  .task-links {
+    margin-top: 20px;
+  }
+
+  /* Styling for Request Details Box */
+  .task-info .task-answer.request-details-box {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    font-family: "Courier New", Courier, monospace;
+    white-space: pre-wrap; /* Preserve newlines and spaces */
+    word-wrap: break-word;
+  }
 </style>
 
 <!-- Home Icon to Redirect to Home Page -->
 <div class="home-icon">
   <a href="{% if user.userprofile.category == 'Departmental Manager' %}{% url 'home' %}
-            {% elif task.assigned_by == user and task.assigned_to == user %}{% url 'assigned_to_me' %}
+            {% elif task.assigned_by == user and task.assigned_to == user %}{% url 'assigned_to_me' %} 
             {% elif task.assigned_by == user %}{% url 'assigned_by_me' %}
             {% else %}{% url 'assigned_to_me' %}{% endif %}">
     <img src="{% static 'task_app/images/home-icon.svg' %}" alt="Home" class="icon">
@@ -90,44 +110,96 @@
 <h2>Task Details: {{ task.task_id }}</h2>
 
 <div class="task-detail-container">
-  <p><strong>Assigned By:</strong> {{ task.assigned_by.get_full_name }}</p>
-  <p><strong>Assigned To:</strong> {{ task.assigned_to.get_full_name }}</p>
-  <p><strong>Department:</strong> {{ task.department.name }}</p>
-  <p><strong>Ticket Type:</strong> {{ task.ticket_type }}</p>
-  <p><strong>Deadline:</strong> {{ task.deadline }}</p>
-  <p><strong>Priority Level:</strong> {{ task.priority }}</p>
-  <p><strong>Subject:</strong> {{ task.subject }}</p>
-  <p><strong>Request Details:</strong> {{ task.request_details }}</p>
-  <p><strong>Status:</strong> {{ task.status }}</p>
-  <p><strong>Attached File:</strong> 
-    {% if task.attach_file %}
-      <a href="{{ task.attach_file.url }}" download>Download</a>
-    {% else %}
-      No file attached
-    {% endif %}
-  </p>
-  
-  <p><strong>Revised Completion Date:</strong> 
-    {% if task.revised_completion_date %}
-      {{ task.revised_completion_date }}
-    {% else %}
-      Not revised
-    {% endif %}
-  </p>
-  <p><strong>Comments by Assignee:</strong> 
-    {% if task.comments_by_assignee %}
-      {{ task.comments_by_assignee }}
-    {% else %}
-      No comments yet
-    {% endif %}
-  </p>
-  <p><strong>Note by Assignee:</strong> 
-    {% if task.notes %}
-      {{ task.notes }}
-    {% else %}
-      No note from assignee
-    {% endif %}
-  </p>
+  <div class="task-info">
+    <div class="task-label"><strong>Assigned By:</strong></div>
+    <div class="task-answer">{{ task.assigned_by.get_full_name }}</div>
+  </div>
+
+  <div class="task-info">
+    <div class="task-label"><strong>Assigned To:</strong></div>
+    <div class="task-answer">{{ task.assigned_to.get_full_name }}</div>
+  </div>
+
+  <div class="task-info">
+    <div class="task-label"><strong>Department:</strong></div>
+    <div class="task-answer">{{ task.department.name }}</div>
+  </div>
+
+  <div class="task-info">
+    <div class="task-label"><strong>Ticket Type:</strong></div>
+    <div class="task-answer">{{ task.ticket_type }}</div>
+  </div>
+
+  <div class="task-info">
+    <div class="task-label"><strong>Deadline:</strong></div>
+    <div class="task-answer">{{ task.deadline }}</div>
+  </div>
+
+  <div class="task-info">
+    <div class="task-label"><strong>Priority Level:</strong></div>
+    <div class="task-answer">{{ task.priority }}</div>
+  </div>
+
+  <div class="task-info">
+    <div class="task-label"><strong>Subject:</strong></div>
+    <div class="task-answer">{{ task.subject }}</div>
+  </div>
+
+  <div class="task-info">
+    <div class="task-label"><strong>Request Details:</strong></div>
+    <div class="task-answer request-details-box">
+      {{ task.request_details|linebreaksbr }}
+    </div>
+  </div>
+
+  <div class="task-info">
+    <div class="task-label"><strong>Status:</strong></div>
+    <div class="task-answer">{{ task.status }}</div>
+  </div>
+
+  <div class="task-info">
+    <div class="task-label"><strong>Attached File:</strong></div>
+    <div class="task-answer">
+      {% if task.attach_file %}
+        <a href="{{ task.attach_file.url }}" download>Download</a>
+      {% else %}
+        No file attached
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="task-info">
+    <div class="task-label"><strong>Revised Completion Date:</strong></div>
+    <div class="task-answer">
+      {% if task.revised_completion_date %}
+        {{ task.revised_completion_date }}
+      {% else %}
+        Not revised
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="task-info">
+    <div class="task-label"><strong>Comments by Assignee:</strong></div>
+    <div class="task-answer">
+      {% if task.comments_by_assignee %}
+        {{ task.comments_by_assignee }}
+      {% else %}
+        No comments yet
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="task-info">
+    <div class="task-label"><strong>Note by Assignee:</strong></div>
+    <div class="task-answer">
+      {% if task.notes %}
+        {{ task.notes }}
+      {% else %}
+        No note from assignee
+      {% endif %}
+    </div>
+  </div>
 
   <!-- Display action links -->
   <div class="task-links">
@@ -145,4 +217,5 @@
     {% endif %}
   </div>
 </div>
+
 {% endblock %}
