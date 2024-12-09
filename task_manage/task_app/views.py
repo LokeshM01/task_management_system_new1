@@ -467,11 +467,11 @@ def metrics(request):
     # Get the current time and the last 24 hours time
     now = timezone.now()
     last_24_hours = now - timezone.timedelta(hours=24)
-
+    today_date=date.today()
     # Metrics for Last 24 Hours (raised and received)
     metrics_data = Task.objects.values('department__name').annotate(
-        tickets_received_last_24hr=Count('id', filter=Q(assigned_to__userprofile__department__name=F('department__name'), assigned_date__gte=last_24_hours)),
-        open_tickets_received=Count('id', filter=Q(assigned_to__userprofile__department__name=F('department__name'), status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing'])),
+        tickets_received_last_24hr=Count('id', filter=Q(assigned_to__userprofile__department__name=F('department__name'), assigned_date__gte=last_24_hours, assigned_date__lte=today_date)),
+        open_tickets_received=Count('id', filter=Q(assigned_to__userprofile__department__name=F('department__name'), status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing'] , assigned_date__lte=today_date)),
     ).order_by('department__name')
 
     # Add all-time data for raised and received tickets
@@ -480,19 +480,22 @@ def metrics(request):
 
         tickets_raised_all_time = Task.objects.filter(
             assigned_by__userprofile__department__name=department_name,
-            status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing']
+            status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing'],
+            assigned_date__lte=today_date
         ).count()
 
         tickets_raised_last_24hr = Task.objects.filter(
             assigned_by__userprofile__department__name=department_name,
-            assigned_date__gte=last_24_hours
+            assigned_date__gte=last_24_hours,
+            assigned_date__lte=today_date
         ).count()
 
         data['tickets_raised_last_24hr'] = tickets_raised_last_24hr
 
         tickets_received_all_time = Task.objects.filter(
             assigned_to__userprofile__department__name=department_name,
-            status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing']
+            status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing'],
+            assigned_date__lte=today_date
         ).count()
 
         data['open_tickets_raised'] = tickets_raised_all_time
@@ -506,7 +509,9 @@ def metrics(request):
         all_task_of_this_dept = Task.objects.filter(
             assigned_to__userprofile__department__name=department_name,
             status__in=['In Progress', 'Not Started','Pending','Processing','Delay Processing','Waiting for confirmation'],
-            assigned_date__lt=last_24_hours 
+            assigned_date__lt=last_24_hours ,
+            assigned_date__lte=today_date
+
         )
 
         # Create a map to store pending tickets count by assigned_by department
