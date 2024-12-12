@@ -66,6 +66,11 @@
     button:hover {
       background-color: #16A085;
     }
+
+    /* Recurrence Fields Hidden by Default */
+    .recurrence-fields {
+      display: none;
+    }
   </style>
 
   <!-- Task Detail Link -->
@@ -76,16 +81,113 @@
   <div class="form-container">
     <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
-      <!-- Include the form fields, including the Status field -->
-      {{ form.as_p }}
-      
-      <!-- Render the Status field separately if not automatically included in {{ form.as_p }} -->
-      <!-- <div class="form-group">
+
+      <!-- Task ID (readonly) -->
+      <div class="form-group">
+        <label for="id_task_id">Task ID:</label>
+        <input type="text" id="id_task_id" name="task_id" value="{{ task.task_id }}" readonly>
+      </div>
+
+      <!-- Assigned To -->
+      <div class="form-group">
+        <label for="id_assigned_to">Assigned To:</label>
+        {{ form.assigned_to }}
+      </div>
+
+      <!-- Deadline -->
+      <div class="form-group">
+        <label for="id_deadline">Deadline:</label>
+        {{ form.deadline }}
+      </div>
+
+      <div class="form-group">
+        <label for="id_department">Department</label>
+        {{ form.department }}
+      </div>
+
+      <!-- Ticket Type -->
+      <div class="form-group">
+        <label for="id_ticket_type">Ticket Type:</label>
+        {{ form.ticket_type }}
+      </div>
+
+      <!-- Priority -->
+      <div class="form-group">
+        <label for="id_priority">Priority:</label>
+        {{ form.priority }}
+      </div>
+
+      <!-- Status -->
+      <div class="form-group">
         <label for="id_status">Status:</label>
         {{ form.status }}
-      </div> -->
+      </div>
+
+      <!-- Subject -->
+      <div class="form-group">
+        <label for="id_subject">Subject:</label>
+        {{ form.subject }}
+      </div>
+
+      <!-- Request Details -->
+      <div class="form-group">
+        <label for="id_request_details">Request Details:</label>
+        {{ form.request_details }}
+      </div>
+
+      <!-- Attach File -->
+      <div class="form-group">
+        <label for="id_attach_file">Attach File:</label>
+        {{ form.attach_file }}
+      </div>
+
+      <!-- Is Recurring -->
+      <div class="form-group">
+        <label for="id_is_recurring">Is Recurring:</label>
+        {{ form.is_recurring }}
+      </div>
+
+      <!-- Recurrence Type, Count, and Duration (Only show when Is Recurring is checked) -->
+      <div class="recurrence-fields">
+        <div class="form-group">
+          <label for="id_recurrence_type">Recurrence Type:</label>
+          {{ form.recurrence_type|default_if_none:"Select Recurrence Type" }}
+        </div>
+      
+        <div class="form-group">
+          <label for="id_recurrence_count">Recurrence Count:</label>
+          {{ form.recurrence_count|default_if_none:"0" }}
+        </div>
+      
+        <div class="form-group">
+          <label for="id_recurrence_duration">Recurrence Duration:</label>
+          {{ form.recurrence_duration|default_if_none:"0" }}
+        </div>
+      </div>
 
       <button type="submit">Save Changes</button>
     </form>
   </div>
+
+  <script>
+    // JavaScript to toggle recurrence fields visibility based on "Is Recurring" checkbox
+    const isRecurringCheckbox = document.getElementById("id_is_recurring");
+    const recurrenceFields = document.querySelector(".recurrence-fields");
+
+    // Initial check to hide or show recurrence fields based on the initial value of "is_recurring"
+    if (isRecurringCheckbox.checked) {
+      recurrenceFields.style.display = "block";
+    } else {
+      recurrenceFields.style.display = "none";
+    }
+
+    // Toggle recurrence fields visibility when "Is Recurring" checkbox is clicked
+    isRecurringCheckbox.addEventListener("change", function() {
+      if (isRecurringCheckbox.checked) {
+        recurrenceFields.style.display = "block";
+      } else {
+        recurrenceFields.style.display = "none";
+      }
+    });
+  </script>
 {% endblock %}

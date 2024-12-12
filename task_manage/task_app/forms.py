@@ -36,15 +36,19 @@ class TaskForm(forms.ModelForm):
         if not self.fields['assigned_to'].queryset.exists():
             self.fields['assigned_to'].queryset = User.objects.none()
 
-        # Show recurrence fields only if the task is recurring
-        if self.instance.is_recurring:
-            self.fields['recurrence_type'].widget.attrs['disabled'] = False
-            self.fields['recurrence_count'].widget.attrs['disabled'] = False
-            self.fields['recurrence_duration'].widget.attrs['disabled'] = False
+        # Conditionally show recurrence fields based on 'is_recurring'
+        if not self.instance.is_recurring:
+            # Hide recurrence fields if task is not recurring
+            self.fields['recurrence_type'].widget.attrs['style'] = 'display: none;'
+            self.fields['recurrence_count'].widget.attrs['style'] = 'display: none;'
+            self.fields['recurrence_duration'].widget.attrs['style'] = 'display: none;'
         else:
-            self.fields['recurrence_type'].widget.attrs['disabled'] = True
-            self.fields['recurrence_count'].widget.attrs['disabled'] = True
-            self.fields['recurrence_duration'].widget.attrs['disabled'] = True
+            # Show recurrence fields if task is recurring
+            self.fields['recurrence_type'].widget.attrs['style'] = 'display: block;'
+            self.fields['recurrence_count'].widget.attrs['style'] = 'display: block;'
+            self.fields['recurrence_duration'].widget.attrs['style'] = 'display: block;'
+
+
 
 
 class TaskStatusUpdateForm(forms.ModelForm):

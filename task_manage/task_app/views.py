@@ -239,7 +239,7 @@ def edit_task(request, task_id):
     old_status = task.status
 
     if request.method == 'POST':
-        form = TaskForm(request.POST, request.FILES, instance=task)
+        form = TaskForm(request.POST, request.FILES, instance=task, user=request.user)
         if form.is_valid():
             updated_task = form.save()
 
@@ -252,19 +252,22 @@ def edit_task(request, task_id):
                 )
 
             # Log priority change if it was updated
-            if old_priority != task.priority:
+            if old_priority != updated_task.priority:
                 ActivityLog.objects.create(
                     action='priority_changed',
                     user=request.user,
                     task=task,
-                    description=f"Priority changed from {old_priority} to {task.priority}"
+                    description=f"Priority changed from {old_priority} to {updated_task.priority}"
                 )
 
             return redirect('assigned_by_me')
+        else:
+            print("Form errors:", form.errors)  # Print form errors if the form is not valid
     else:
-        form = TaskForm(instance=task)
+        form = TaskForm(instance=task, user=request.user)
 
     return render(request, 'tasks/edit_task.html', {'task': task, 'form': form})
+
 
 
 @login_required
