@@ -89,6 +89,7 @@ class Task(models.Model):
     recurrence_type = models.CharField(max_length=10, choices=RECURRENCE_TYPE_CHOICES, null=True, blank=True)
     recurrence_count = models.IntegerField(default=1)
     recurrence_duration = models.IntegerField(default=1)
+    is_recurred_task = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.task_id:
@@ -132,6 +133,7 @@ class Task(models.Model):
                 subject=self.subject,
                 request_details=self.request_details,
                 is_recurring=False,  # Newly created tasks are not recurring
+                is_recurred_task=True,  # Mark as recurred task
                 recurrence_type=None,
                 recurrence_count=self.recurrence_count,
                 recurrence_duration=self.recurrence_duration,
