@@ -153,6 +153,7 @@ class ActivityLog(models.Model):
         ('deadline_revised', 'Deadline Revised'),
         ('comment_added', 'Comment Added'),
         ('assigned', 'Assigned'),
+        ('reassigned','Reassigned')
     ]
 
     action = models.CharField(max_length=50, choices=ACTION_CHOICES)

@@ -417,7 +417,7 @@ def task_note_page(request, task_id):
 
         # Log the reassignment
         ActivityLog.objects.create(
-            action='assigned',
+            action='reassigned',
             user=request.user,
             task=task,
             description=f"Task reassigned from {old_assignee.username} to {task.assigned_to.username}"
