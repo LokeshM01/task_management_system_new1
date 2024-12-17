@@ -233,7 +233,11 @@ def create_task(request):
 @login_required
 def edit_task(request, task_id):
     task = get_object_or_404(Task, task_id=task_id)
-    if task.assigned_by != request.user:
+    user_profile = UserProfile.objects.get(user=request.user)
+    if task.assigned_by != request.user and not (
+    user_profile.category == 'Departmental Manager' and
+    task.assigned_by.userprofile.department == user_profile.department
+    ):
         raise PermissionDenied
 
     old_priority = task.priority  # Capture the current priority before changes
@@ -521,7 +525,7 @@ def metrics(request):
         all_task_of_this_dept = Task.objects.filter(
             assigned_to__userprofile__department__name=department_name,
             status__in=['In Progress', 'Not Started','Pending','Processing','Delay Processing','Waiting for confirmation'],
-            assigned_date__lt=last_24_hours ,
+            # assigned_date__lt=last_24_hours ,
             assigned_date__lte=today_date
 
         )
