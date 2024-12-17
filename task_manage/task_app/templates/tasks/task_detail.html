@@ -208,8 +208,8 @@
     {% endif %}
     {% if task.assigned_by == user %}
       <a href="{% url 'edit_task' task.task_id %}">Edit Task</a>
-    {% endif %}
-    {% if user.userprofile.category == 'Departmental Manager' and task.assigned_by.userprofile.department.name == user.userprofile.department.name %}
+    
+    {% elif user.userprofile.category == 'Departmental Manager' and task.assigned_by.userprofile.department.name == user.userprofile.department.name %}
       <a href="{% url 'edit_task' task.task_id %}">Edit Task</a>
     {% endif %}
     {% if task.assigned_to == user %}

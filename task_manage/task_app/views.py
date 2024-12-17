@@ -409,9 +409,10 @@ def task_note_page(request, task_id):
     if request.method == 'POST':
         note = request.POST.get('note')
         task.notes = note
-        
+        from_dept=task.assigned_by.userprofile.department
 
         task.assigned_to = task.assigned_by
+        task.department=from_dept
         task.save()
 
         # Log the reassignment
