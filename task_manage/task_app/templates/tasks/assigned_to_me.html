@@ -70,6 +70,14 @@
                     {% endfor %}
                 </select>
 
+                <!-- Assignor Department Filter -->
+                <select id="assignorDepartmentFilter">
+                    <option value="">Assignor Department</option>
+                    {% for department in departments %}
+                        <option value="{{ department.name }}">{{ department.name }}</option>
+                    {% endfor %}
+                </select>
+
                 <!-- Deadline Filter -->
                 <input type="date" id="deadlineFilter">
                 <button class="filter-btn" onclick="filterTable()">Filter</button>
@@ -93,6 +101,7 @@
                         <th>Department</th>
                         <th>Deadline</th>
                         <th>Assigned By</th>
+                        <th>Assignor Department</th>
                         <th>Revised Deadline</th>
                     </tr>
                 </thead>
@@ -107,6 +116,7 @@
                             <td>{{ task.department.name }}</td>
                             <td>{{ task.deadline }}</td>
                             <td>{{ task.assigned_by.get_full_name }}</td>
+                            <td>{{ task.assigned_by.userprofile.department.name }}</td>
                             <td>{{ task.revised_completion_date|default:"NA" }}</td>
                         </tr>
                     {% empty %}
@@ -137,7 +147,7 @@
     .sidebar {
         background-color: #f4f4f9;
         color: #333;
-        width: 250px;
+        width: 190px;
         padding: 20px;
         text-align: center;
     }
@@ -265,6 +275,7 @@
         const priorityFilter = document.getElementById('priorityFilter').value.toLowerCase();
         const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
         const departmentFilter = document.getElementById('departmentFilter').value.toLowerCase();
+        const assignorDepartmentFilter = document.getElementById('assignorDepartmentFilter').value.toLowerCase();
         const deadlineFilter = document.getElementById('deadlineFilter').value;
         const assigned_by_filter=document.getElementById('assigned_by_filter').value.toLowerCase();
         const table = document.getElementById('taskTable');
@@ -276,15 +287,17 @@
                 const priority = cells[2].innerText.toLowerCase();
                 const status = cells[3].innerText.toLowerCase();
                 const department = cells[4].innerText.toLowerCase();
+                
                 const deadline = cells[5].innerText;
                 const assigned_by = cells[6].innerText.toLowerCase();
+                const assignorDepartment = cells[7].innerText.toLowerCase();
 
                 let displayRow = true;
 
                 if (priorityFilter && priority !== priorityFilter) displayRow = false;
                 if (statusFilter && status !== statusFilter) displayRow = false;
                 if (departmentFilter && department !== departmentFilter) displayRow = false;
-
+                if (assignorDepartmentFilter && assignorDepartment !== assignorDepartmentFilter) displayRow = false;
                 if (deadlineFilter) {
                     const deadlineDate = new Date(deadline);
                     const selectedDate = new Date(deadlineFilter);

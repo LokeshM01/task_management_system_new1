@@ -53,11 +53,19 @@
                     <option value="Cancelled">Cancelled</option>
                 </select>
 
-                <!-- Functional Category Filter (Department) -->
+                <!-- Department Filter -->
                 <select id="departmentFilter">
                     <option value="">Department</option>
                     {% for department in departments %}
-                    <option value="{{ department.name }}">{{ department.name }}</option>
+                        <option value="{{ department.name }}">{{ department.name }}</option>
+                    {% endfor %}
+                </select>
+
+                <!-- Assignor Department Filter -->
+                <select id="assignorDepartmentFilter">
+                    <option value="">Assignor Department</option>
+                    {% for department in departments %}
+                        <option value="{{ department.name }}">{{ department.name }}</option>
                     {% endfor %}
                 </select>
 
@@ -83,14 +91,14 @@
                         <th>Deadline</th>
                         <th>Assigned By</th>
                         <th>Assigned To</th>
+                        <th>Assignor Department</th>
                         <th>Revised Deadline</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for task in tasks %}
                         <tr>
-                            <!-- Link in Keyword Column -->
-                            <td><a href="{% url 'task_detail' task.task_id %}"  class="task-keyword-link">{{ task.task_id }}</a></td>
+                            <td><a href="{% url 'task_detail' task.task_id %}" class="task-keyword-link">{{ task.task_id }}</a></td>
                             <td>{{ task.subject }}</td>
                             <td>{{ task.priority }}</td>
                             <td>{{ task.status }}</td>
@@ -98,11 +106,12 @@
                             <td>{{ task.deadline }}</td>
                             <td>{{ task.assigned_by.get_full_name }}</td>
                             <td>{{ task.assigned_to.get_full_name }}</td>
+                            <td>{{ task.assigned_by.userprofile.department.name }}</td>
                             <td>{{ task.revised_completion_date|default:"NA" }}</td>
                         </tr>
                     {% empty %}
                         <tr>
-                            <td colspan="6">No tasks available.</td>
+                            <td colspan="10">No tasks available.</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -111,30 +120,25 @@
     </div>
 </div>
 
-<!-- Inline CSS for Home Page with Green Theme -->
+<!-- Inline CSS -->
 <style>
     .task-manager-container {
         display: flex;
         height: 100vh;
         font-family: Arial, sans-serif;
     }
-    .task-keyword-link {
-      
-      color: #4CAF50;
-      text-decoration: none;
-    }
 
     .sidebar {
         background-color: #f4f4f9;
         color: #333;
-        width: 250px;
+        width: 190px;
         padding: 20px;
         text-align: center;
     }
 
     .sidebar h2 {
         font-size: 22px;
-        color: #4CAF50; /* Green */
+        color: #4CAF50;
     }
 
     .sidebar ul {
@@ -156,7 +160,7 @@
     }
 
     .sidebar ul li a.active, .sidebar ul li a:hover {
-        background-color: #4CAF50; /* Green */
+        background-color: #4CAF50;
         color: #fff;
     }
 
@@ -183,18 +187,14 @@
         gap: 10px;
     }
 
-    .filters label {
-        font-weight: bold;
-    }
-
     .filters select, .filters input[type="date"] {
         padding: 8px;
         border-radius: 5px;
         border: 1px solid #ccc;
     }
 
-    .filter-btn {
-        background-color: #4CAF50; /* Green */
+    .filter-btn, .create-task-btn {
+        background-color: #4CAF50;
         color: white;
         border: none;
         padding: 8px 15px;
@@ -202,32 +202,14 @@
         cursor: pointer;
     }
 
-    .filter-btn:hover {
-        background-color: #388E3C; /* Darker Green */
-    }
-
-    .create-task-btn {
-        padding: 8px 15px;
-        background-color: #4CAF50; /* Green */
-        color: white;
-        border: none;
-        border-radius: 5px;
-        font-weight: bold;
-        cursor: pointer;
-    }
-
-    .create-task-btn:hover {
-        background-color: #388E3C; /* Darker Green */
-    }
-
-    .task-table {
-        margin-top: 20px;
-        width: 100%;
+    .filter-btn:hover, .create-task-btn:hover {
+        background-color: #388E3C;
     }
 
     .task-table table {
         width: 100%;
         border-collapse: collapse;
+        margin-top: 20px;
     }
 
     .task-table th, .task-table td {
@@ -247,16 +229,26 @@
     }
 
     .task-table tr:hover td {
-        background-color: #E8F5E9; /* Light Green */
+        background-color: #E8F5E9;
+    }
+    .task-keyword-link {
+    color: #4CAF50; /* Green */
+    text-decoration: none;
+    }
+
+    .task-keyword-link:hover {
+        text-decoration: underline;
+        color: #388E3C; /* Darker Green */
     }
 </style>
 
-<!-- Inline JavaScript for Filtering -->
+<!-- Inline JavaScript -->
 <script>
     function filterTable() {
         const priorityFilter = document.getElementById('priorityFilter').value.toLowerCase();
         const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
         const departmentFilter = document.getElementById('departmentFilter').value.toLowerCase();
+        const assignorDepartmentFilter = document.getElementById('assignorDepartmentFilter').value.toLowerCase();
         const deadlineFilter = document.getElementById('deadlineFilter').value;
 
         const table = document.getElementById('taskTable');
@@ -268,6 +260,7 @@
                 const priority = cells[2].innerText.toLowerCase();
                 const status = cells[3].innerText.toLowerCase();
                 const department = cells[4].innerText.toLowerCase();
+                const assignorDepartment = cells[8].innerText.toLowerCase();
                 const deadline = cells[5].innerText;
 
                 let displayRow = true;
@@ -275,6 +268,7 @@
                 if (priorityFilter && priority !== priorityFilter) displayRow = false;
                 if (statusFilter && status !== statusFilter) displayRow = false;
                 if (departmentFilter && department !== departmentFilter) displayRow = false;
+                if (assignorDepartmentFilter && assignorDepartment !== assignorDepartmentFilter) displayRow = false;
 
                 if (deadlineFilter) {
                     const deadlineDate = new Date(deadline);
