@@ -205,6 +205,8 @@
   <div class="task-links">
     {% if task.assigned_to == user %}
       <a href="{% url 'update_task_status' task.task_id %}">Update Status</a>
+    {% elif user.userprofile.category == 'Departmental Manager' and task.assigned_to.userprofile.department.name == user.userprofile.department.name %}
+      <a href="{% url 'update_task_status' task.task_id %}">Update Status</a>
     {% endif %}
     {% if task.assigned_by == user %}
       <a href="{% url 'edit_task' task.task_id %}">Edit Task</a>
@@ -213,6 +215,8 @@
       <a href="{% url 'edit_task' task.task_id %}">Edit Task</a>
     {% endif %}
     {% if task.assigned_to == user %}
+      <a href="{% url 'reassign_task' task.task_id %}">Reassign to Creator</a>
+    {% elif user.userprofile.category == 'Departmental Manager' and task.assigned_to.userprofile.department.name == user.userprofile.department.name %}
       <a href="{% url 'reassign_task' task.task_id %}">Reassign to Creator</a>
     {% endif %}
     {% if task.assigned_to.userprofile.category == 'Departmental Manager' and user.userprofile.category == 'Departmental Manager' %}

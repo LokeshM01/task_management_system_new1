@@ -388,9 +388,12 @@ def mark_task_completed(request, task_id):
 def reassign_task(request, task_id):
     task = get_object_or_404(Task, task_id=task_id)
     old_assignee = task.assigned_to  # Capture the current assignee before reassigning
-
-    if task.assigned_to != request.user:
-        raise PermissionDenied("Only the assignee can reassign the task back to the creator.")
+    user_profile = UserProfile.objects.get(user=request.user)
+    if task.assigned_to != request.user and not (
+    user_profile.category == 'Departmental Manager' and
+    task.assigned_to.userprofile.department == user_profile.department
+    ):
+        raise PermissionDenied
 
     
 
@@ -402,8 +405,14 @@ def reassign_task(request, task_id):
 def task_note_page(request, task_id):
     task = get_object_or_404(Task, task_id=task_id)
     old_assignee = task.assigned_to
-    if task.assigned_to != request.user:
-        raise PermissionDenied("You can only add notes to tasks that are assigned to you.")
+    user_profile = UserProfile.objects.get(user=request.user)
+    if task.assigned_to != request.user and not (
+    user_profile.category == 'Departmental Manager' and
+    task.assigned_to.userprofile.department == user_profile.department
+    ):
+        raise PermissionDenied
+    # if task.assigned_to != request.user:
+    #     raise PermissionDenied("You can only add notes to tasks that are assigned to you.")
 
     # Handle note addition
     if request.method == 'POST':
