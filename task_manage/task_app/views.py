@@ -51,7 +51,7 @@ def home(request):
         return render(request, 'tasks/home.html', {
             'tasks': tasks,
             'departments': Department.objects.all(),
-            
+            'users':User.objects.all(),
         })
 
     return redirect('assigned_to_me')
