@@ -37,7 +37,7 @@
         <!-- Filter Section -->
         <div class="filter-section">
             <div class="filters">
-                <label>Filter By:</label>
+                
 
                 <!-- Priority Filter -->
                 <select id="priorityFilter">
@@ -140,12 +140,13 @@
     display: flex;
     height: 100vh;
     font-family: Arial, sans-serif;
+    overflow-x: hidden; /* Prevent horizontal overflow */
 }
 
 .sidebar {
     background-color: #3c3a5d;
     color: #fff;
-    width: 180px;
+    width: 220px; /* Increased width */
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -158,6 +159,7 @@
     margin-bottom: 20px;
     text-align: center;
     color: #d1c4e9;
+    /* width: 180px; */
 }
 
 .sidebar ul {
@@ -233,6 +235,7 @@
     display: flex;
     align-items: center;
     gap: 5px;
+    margin-right: 35px;
 }
 
 .filter-btn:hover, .create-task-btn:hover {
