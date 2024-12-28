@@ -245,31 +245,48 @@
     border: 1px solid #ccc; /* Optional: Add a border for visual separation */
     border-radius: 8px; /* Optional: Rounded corners for the container */
     background-color: #fff; /* Ensure consistent background */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
 }
 
 .task-table table {
     width: 100%;
     border-collapse: collapse;
+    font-size: 14px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #fafafa; /* Light background for better contrast */
 }
 
 .task-table th, .task-table td {
-    padding: 10px;
+    padding: 12px 15px; /* Larger padding for better readability */
     text-align: left;
-    border: 1px solid #ccc;
+    border-bottom: 1px solid #ddd; /* Subtle border */
+    white-space: nowrap;
+    color: #333;
 }
 
 .task-table th {
     background-color: #565478;
     color: #fff;
+    text-transform: uppercase; /* Better header appearance */
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.task-table tr:nth-child(even) {
+    background-color: #f4f4f8;
 }
 
 .task-table tr:hover {
-    background-color: #f1f1f1;
+    background-color: #eceff4;
+    transition: background-color 0.3s ease; /* Smooth hover effect */
 }
 
 .task-keyword-link {
     color: #5e548e;
     text-decoration: none;
+    font-weight: bold;
 }
 
 .task-keyword-link:hover {
