@@ -3,78 +3,121 @@
 
 {% block content %}
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
-      color: #333;
-      margin: 0;
-      padding: 0;
-    }
+    /* General Page Styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
 
-    h2 {
-      color: #4CAF50;
-      font-size: 28px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
+h2 {
+    color: #3c3a5d;
+    font-size: 30px;
+    margin: 30px 0;
+    text-align: center;
+    font-weight: bold;
+}
 
+/* Task Note Container */
+.task-note-container {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 700px;
+    margin: 40px auto;
+}
+
+/* Form Elements */
+label {
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: block;
+    color: #3c3a5d;
+    font-size: 14px;
+}
+
+textarea {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    resize: vertical;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+textarea:focus {
+    border-color: #5e548e;
+    box-shadow: 0 0 6px rgba(94, 84, 142, 0.3);
+    outline: none;
+}
+
+/* Buttons */
+button {
+    padding: 14px 20px;
+    background-color: #5e548e;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+    background-color: #443c68;
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* Back Link */
+.task-detail-link {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 18px;
+    color: #5e548e;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.task-detail-link:hover {
+    text-decoration: underline;
+    color: #443c68;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
     .task-note-container {
-      background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    /* Form elements and layout */
-    label {
-      font-weight: bold;
-      margin-bottom: 5px;
-      display: inline-block;
-    }
-
-    textarea {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      font-size: 16px;
-      resize: vertical;
-      margin-bottom: 15px;
+        padding: 20px;
+        margin: 30px auto;
     }
 
     button {
-      padding: 10px 15px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
+        width: 100%;
+        font-size: 15px;
     }
 
-    button:hover {
-      background-color: #45a049;
-    }
-
-    .task-note-container .reassign-btn-container {
-      margin-top: 20px;
+    h2 {
+        font-size: 26px;
     }
 
     .task-detail-link {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      font-size: 18px;
-      color: #4CAF50;
-      text-decoration: none;
+        font-size: 16px;
     }
+}
 
-    .task-detail-link:hover {
-      text-decoration: underline;
-      color: #388E3C;
-    }
   </style>
 
   <!-- Back to Task Detail Link -->

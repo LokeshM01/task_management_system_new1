@@ -2,19 +2,30 @@
 {% load static %}
 
 {% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Log</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
 <div class="task-manager-container">
     <!-- Sidebar -->
     <div class="sidebar">
         <h2>Task Management System</h2>
         <ul>
-            {% with request.user.userprofile as profile %}
-                {% if profile.category == 'Task Management System Manager' %}
-                    <li><a href="{% url 'activity' %}">Activity</a></li>
-                    <li><a href="{% url 'metrics' %}" class="active">Metrics</a></li>
-                    <li><a href="{% url 'user_profile' %}">User Profile</a></li>
-                {% endif %}
-            {% endwith %}
+            <li><a href="{% url 'activity' %}" class="{% if request.resolver_match.url_name == 'activity' %}active{% endif %}">
+                <span class="material-icons">analytics</span> Activity</a>
+            </li>
+            <li><a href="{% url 'metrics' %}" class="{% if request.resolver_match.url_name == 'metrics' %}active{% endif %}">
+                <span class="material-icons">bar_chart</span> Metrics</a>
+            </li>
+            <li><a href="{% url 'user_profile' %}" class="{% if request.resolver_match.url_name == 'user_profile' %}active{% endif %}">
+                <span class="material-icons">person</span> User Profile</a>
+            </li>
         </ul>
+        <div class="logout">
+            <a href="{% url 'logout' %}"><span class="material-icons">logout</span> Logout</a>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -77,31 +88,208 @@
 
 <!-- Inline CSS for styling -->
 <style>
-    .task-manager-container { display: flex; height: 100vh; font-family: Arial, sans-serif; }
-    .sidebar { background-color: #f4f4f9; color: #333; width: 250px; padding: 20px; text-align: center; }
-    .sidebar h2 { font-size: 22px; color: #4CAF50; }
-    .sidebar ul { list-style: none; padding: 0; }
-    .sidebar ul li { margin: 15px 0; }
-    .sidebar ul li a { text-decoration: none; color: #333; font-size: 18px; display: block; padding: 10px; border-radius: 8px; }
-    .sidebar ul li a.active, .sidebar ul li a:hover { background-color: #4CAF50; color: #fff; }
-    .main-content { flex: 1; padding: 20px; }
-    .header h1 { font-size: 24px; color: #333; }
-    .metrics-table { margin-top: 20px; }
-    .metrics-table table { width: 100%; border-collapse: collapse; }
-    .metrics-table th, .metrics-table td { padding: 12px; border: 1px solid #ddd; text-align: left; }
-    .metrics-table th { background-color: #f4f4f9; color: #333; }
-    .metrics-table td { background-color: #fff; color: #333; }
-    .metrics-table tr:hover td { background-color: #E8F5E9; }
-    .metrics-table .total-row td { font-weight: bold; background-color: #f4f4f9; }
-    .download-btn { margin-top: 23px;padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
-    .download-btn:hover { background-color: #388E3C; }
-    .pending-list {
-        list-style-type: none;
-        padding: 0;
+    .task-manager-container {
+    display: flex;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+    overflow-x: hidden;
+}
+.logout a {
+            color: #d1c4e9;
+            text-decoration: none;
+            text-align: center;
+            display: block;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #5e548e;
+            border-radius: 4px;
+        }
+
+/* Sidebar Styling */
+.sidebar {
+    background-color: #3c3a5d;
+    color: #ffffff;
+    width: 180px;
+    padding: 20px;
+    /* text-align: center; */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-radius: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: #d1c4e9;
+    text-align: center;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin: 10px 0;
+}
+
+.sidebar ul li a {
+            text-decoration: none;
+            color: #d1c4e9;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 19px;
+}
+
+.sidebar ul li a.active,
+.sidebar ul li a:hover {
+    background-color: #5e548e;
+    /* color: #ffffff; */
+}
+
+.main-content {
+    flex: 1;
+    padding: 30px;
+    background-color: #f9f9f9;
+    border-radius: 15px;
+    margin: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Header Styling */
+.header h1 {
+    font-size: 26px;
+    color: #5e548e;
+    margin-bottom: 10px;
+}
+
+.header p {
+    font-size: 14px;
+    color: #555555;
+    margin-bottom: 20px;
+}
+
+/* Metrics Table Styling */
+.metrics-table {
+    margin-top: 20px;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.metrics-table h3 {
+    font-size: 20px;
+    color: #5e548e;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.metrics-table table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.metrics-table th,
+.metrics-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border: 1px solid #dddddd;
+}
+
+.metrics-table th {
+    background-color: #5e548e;
+    color: #ffffff;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.metrics-table td {
+    background-color: #ffffff;
+    font-size: 14px;
+    color: #333333;
+}
+
+.metrics-table tr:hover td {
+    background-color: #eceff4;
+}
+
+.metrics-table .total-row td {
+    font-weight: bold;
+    background-color: #e8eaf6;
+    color: #5e548e;
+}
+
+/* Download Button Styling */
+.download-btn {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 20px;
+    background-color: #5e548e;
+    color: #ffffff;
+    font-weight: bold;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+.download-btn:hover {
+    background-color: #443c68;
+}
+
+/* Pending Tickets List */
+.pending-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.pending-list li {
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #333333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        padding: 15px;
+        text-align: center;
+        margin-bottom: 20px;
+        border-radius: 0;
     }
-    .pending-list li {
-        margin-bottom: 5px;
+
+    .main-content {
+        padding: 15px;
+        margin: 0;
+        border-radius: 0;
     }
+
+    .metrics-table h3 {
+        font-size: 18px;
+    }
+
+    .metrics-table th,
+    .metrics-table td {
+        font-size: 12px;
+        padding: 8px;
+    }
+
+    .download-btn {
+        padding: 10px 15px;
+        font-size: 12px;
+    }
+}
+
+
 </style>
 
 {% endblock %}

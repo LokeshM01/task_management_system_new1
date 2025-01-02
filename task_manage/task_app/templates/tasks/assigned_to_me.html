@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block content %}
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <div class="task-manager-container">
     <!-- Sidebar -->
     <div class="sidebar">
@@ -9,19 +10,22 @@
         <ul>
             {% with request.user.userprofile as profile %}
                 {% if profile.category == 'Task Management System Manager' %}
-                    <li><a href="{% url 'activity' %}" class="{% if request.resolver_match.url_name == 'activity' %}active{% endif %}">Activity</a></li>
-                    <li><a href="{% url 'metrics' %}" class="{% if request.resolver_match.url_name == 'metrics' %}active{% endif %}">Metrics</a></li>
-                    <li><a href="{% url 'user_profile' %}" class="{% if request.resolver_match.url_name == 'user_profile' %}active{% endif %}">User Profile</a></li>
+                    <li><a href="{% url 'activity' %}" class="{% if request.resolver_match.url_name == 'activity' %}active{% endif %}"><span class="material-icons">analytics</span> Activity</a></li>
+                    <li><a href="{% url 'metrics' %}" class="{% if request.resolver_match.url_name == 'metrics' %}active{% endif %}"><span class="material-icons">bar_chart</span> Metrics</a></li>
+                    <li><a href="{% url 'user_profile' %}" class="{% if request.resolver_match.url_name == 'user_profile' %}active{% endif %}"><span class="material-icons">person</span> User Profile</a></li>
                 {% else %}
                     {% if profile.category == "Departmental Manager" %}
-                        <li><a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a></li>
+                        <li><a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}"><span class="material-icons">home</span> Home</a></li>
                     {% endif %}
-                    <li><a href="{% url 'assigned_to_me' %}" class="{% if request.resolver_match.url_name == 'assigned_to_me' %}active{% endif %}">Assigned To Me</a></li>
-                    <li><a href="{% url 'assigned_by_me' %}" class="{% if request.resolver_match.url_name == 'assigned_by_me' %}active{% endif %}">Assigned By Me</a></li>
-                    <li><a href="{% url 'user_profile' %}" class="{% if request.resolver_match.url_name == 'user_profile' %}active{% endif %}">User Profile</a></li>
+                    <li><a href="{% url 'assigned_to_me' %}" class="{% if request.resolver_match.url_name == 'assigned_to_me' %}active{% endif %}"><span class="material-icons">assignment</span> Assigned To Me</a></li>
+                    <li><a href="{% url 'assigned_by_me' %}" class="{% if request.resolver_match.url_name == 'assigned_by_me' %}active{% endif %}"><span class="material-icons">assignment_ind</span> Assigned By Me</a></li>
+                    <li><a href="{% url 'user_profile' %}" class="{% if request.resolver_match.url_name == 'user_profile' %}active{% endif %}"><span class="material-icons">person</span> User Profile</a></li>
                 {% endif %}
             {% endwith %}
         </ul>
+        <div class="logout">
+            <a href="{% url 'logout' %}"><span class="material-icons">logout</span> Logout</a>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -31,7 +35,7 @@
         </div>
 
         <!-- Filter and Create Task Section -->
-        <div class="filter-create-section">
+        <div class="filter-section">
             <div class="filters">
                 <label>Filter By:</label>
 
@@ -54,7 +58,7 @@
                     <option value="Cancelled">Cancelled</option>
                 </select>
 
-                <!-- Functional Category Filter (Department) -->
+                <!-- Department Filter -->
                 <select id="departmentFilter">
                     <option value="">Department</option>
                     {% for department in departments %}
@@ -62,11 +66,11 @@
                     {% endfor %}
                 </select>
 
-                <!-- Functional Category Filter (Assigned by) -->
-                <select id="assigned_by_filter">
+                <!-- Assigned By Filter -->
+                <select id="assignedByFilter">
                     <option value="">Assigned By</option>
                     {% for user in users %}
-                    <option value="{{ user.get_full_name}}">{{ user.get_full_name }}</option>
+                    <option value="{{ user.get_full_name }}">{{ user.get_full_name }}</option>
                     {% endfor %}
                 </select>
 
@@ -74,243 +78,260 @@
                 <select id="assignorDepartmentFilter">
                     <option value="">Assignor Department</option>
                     {% for department in departments %}
-                        <option value="{{ department.name }}">{{ department.name }}</option>
+                    <option value="{{ department.name }}">{{ department.name }}</option>
                     {% endfor %}
                 </select>
 
                 <!-- Deadline Filter -->
                 <input type="date" id="deadlineFilter">
-                <button class="filter-btn" onclick="filterTable()">Filter</button>
+                <button class="filter-btn" onclick="filterTable()"><span class="material-icons">filter_alt</span> Filter</button>
             </div>
 
-                
-
             <!-- Create Task Button -->
-            <button class="create-task-btn" onclick="window.location.href='{% url 'create_task' %}'">Create Task</button>
+            <button class="create-task-btn" onclick="window.location.href='{% url 'create_task' %}'"><span class="material-icons">add_circle</span> Create Task</button>
         </div>
 
         <!-- Task Table -->
-        <div class="task-table">
-            <table id="taskTable">
-                <thead>
-                    <tr>
-                        <th>Keyword</th>
-                        <th>Subject</th>
-                        <th>Priority</th>
-                        <th>Status</th>
-                        <th>Department</th>
-                        <th>Deadline</th>
-                        <th>Assigned By</th>
-                        <th>Assignor Department</th>
-                        <th>Revised Deadline</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for task in tasks %}
+        <div class="task-table-container">
+            <div class="task-table">
+                <table id="taskTable">
+                    <thead>
                         <tr>
-                            <!-- Link in Keyword Column -->
-                            <td><a href="{% url 'task_detail' task.task_id %}" class="task-keyword-link">{{ task.task_id }}</a></td>
-                            <td>{{ task.subject }}</td>
-                            <td>{{ task.priority }}</td>
-                            <td>{{ task.status }}</td>
-                            <td>{{ task.department.name }}</td>
-                            <td>{{ task.deadline }}</td>
-                            <td>{{ task.assigned_by.get_full_name }}</td>
-                            <td>{{ task.assigned_by.userprofile.department.name }}</td>
-                            <td>{{ task.revised_completion_date|default:"NA" }}</td>
+                            <th>Keyword</th>
+                            <th>Subject</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Department</th>
+                            <th>Deadline</th>
+                            <th>Assigned By</th>
+                            <th>Assignor Department</th>
+                            <th>Revised Deadline</th>
                         </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="6">No tasks assigned to you.</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks %}
+                            <tr>
+                                <td><a href="{% url 'task_detail' task.task_id %}" class="task-keyword-link">{{ task.task_id }}</a></td>
+                                <td>{{ task.subject }}</td>
+                                <td>{{ task.priority }}</td>
+                                <td>{{ task.status }}</td>
+                                <td>{{ task.department.name }}</td>
+                                <td>{{ task.deadline }}</td>
+                                <td>{{ task.assigned_by.get_full_name }}</td>
+                                <td>{{ task.assigned_by.userprofile.department.name }}</td>
+                                <td>{{ task.revised_completion_date|default:"NA" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="9">No tasks assigned to you.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Inline CSS for Assigned To Me Page with Green Theme -->
 <style>
-    .task-manager-container {
-        display: flex;
-        height: 100vh;
-        font-family: Arial, sans-serif;
-    }
+/* General Styling */
+.task-manager-container {
+    display: flex;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+    overflow-x: hidden;
+}
 
-    .task-keyword-link {
-      
-      color: #4CAF50;
-      text-decoration: none;
-    }
+.sidebar {
+    background-color: #3c3a5d;
+    color: #fff;
+    width: 180px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-radius: 20px;
+}
 
-    .sidebar {
-        background-color: #f4f4f9;
-        color: #333;
-        width: 190px;
-        padding: 20px;
-        text-align: center;
-    }
+.sidebar h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #d1c4e9;
+}
 
-    .sidebar h2 {
-        font-size: 22px;
-        color: #4CAF50; /* Green */
-    }
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
 
-    .sidebar ul {
-        list-style: none;
-        padding: 0;
-    }
+.sidebar ul li {
+    margin: 10px 0;
+}
 
-    .sidebar ul li {
-        margin: 15px 0;
-    }
+.sidebar ul li a {
+    text-decoration: none;
+    color: #d1c4e9;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 19px;
+}
 
-    .sidebar ul li a {
-        text-decoration: none;
-        color: #333;
-        font-size: 18px;
-        display: block;
-        padding: 10px;
-        border-radius: 8px;
-    }
+.sidebar ul li a.active, .sidebar ul li a:hover {
+    background-color: #5e548e;
+}
 
-    .sidebar ul li a.active, .sidebar ul li a:hover {
-        background-color: #4CAF50; /* Green */
-        color: #fff;
-    }
+.logout a {
+    color: #d1c4e9;
+    text-decoration: none;
+    text-align: center;
+    display: block;
+    padding: 10px;
+    margin-top: 20px;
+    background-color: #5e548e;
+    border-radius: 4px;
+}
 
-    .main-content {
-        flex: 1;
-        padding: 20px;
-    }
+.main-content {
+    flex: 1;
+    padding: 20px;
+    background-color: #f9f9f9;
+}
 
-    .header h1 {
-        font-size: 24px;
-        color: #333;
-    }
+.header h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
 
-    .filter-create-section {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: 20px;
-    }
+.filter-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
 
-    .filters {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
+.filters {
+    display: flex;
+    gap: 10px;
+}
 
-    .filter-create-section label {
-        font-weight: bold;
-        margin-right: 10px;
-    }
+.filters select, .filters input {
+    padding: 8px;
+    border-radius: 19px;
+    border: 1px solid #ccc;
+}
 
-    .filters select, .filters input[type="date"], .filter-btn {
-        padding: 8px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-    }
+.filter-btn, .create-task-btn {
+    padding: 10px 15px;
+    background-color: #5e548e;
+    color: #fff;
+    border: none;
+    border-radius: 19px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
 
-    .filter-btn {
-        background-color: #4CAF50; /* Green */
-        color: white;
-        border: none;
-        cursor: pointer;
-    }
+.filter-btn:hover, .create-task-btn:hover {
+    background-color: #443c68;
+}
 
-    .filter-btn:hover {
-        background-color: #388E3C; /* Darker Green */
-    }
+.task-table-container {
+    height: calc(100vh - 150px);
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
 
-    .create-task-btn {
-        padding: 8px 15px;
-        background-color: #4CAF50; /* Green */
-        color: white;
-        border: none;
-        border-radius: 5px;
-        font-weight: bold;
-        cursor: pointer;
-    }
+.task-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #fafafa;
+}
 
-    .create-task-btn:hover {
-        background-color: #388E3C; /* Darker Green */
-    }
+.task-table th, .task-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    white-space: nowrap;
+    color: #333;
+}
 
-    .task-table {
-        margin-top: 20px;
-    }
+.task-table th {
+    background-color: #565478;
+    color: #fff;
+    text-transform: uppercase;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
 
-    .task-table table {
-        width: 100%;
-        border-collapse: collapse;
-    }
+.task-table tr:nth-child(even) {
+    background-color: #f4f4f8;
+}
 
-    .task-table th, .task-table td {
-        padding: 12px;
-        border: 1px solid #ddd;
-        text-align: left;
-    }
+.task-table tr:hover {
+    background-color: #eceff4;
+    transition: background-color 0.3s ease;
+}
 
-    .task-table th {
-        background-color: #f4f4f9;
-        color: #333;
-    }
+.task-keyword-link {
+    color: #5e548e;
+    text-decoration: none;
+    font-weight: bold;
+}
 
-    .task-table td {
-        background-color: #fff;
-        color: #333;
-    }
-
-    .task-table tr:hover td {
-        background-color: #E8F5E9; /* Light Green */
-    }
+.task-keyword-link:hover {
+    text-decoration: underline;
+}
 </style>
 
-<!-- Inline JavaScript for Filtering -->
 <script>
-    function filterTable() {
-        const priorityFilter = document.getElementById('priorityFilter').value.toLowerCase();
-        const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
-        const departmentFilter = document.getElementById('departmentFilter').value.toLowerCase();
-        const assignorDepartmentFilter = document.getElementById('assignorDepartmentFilter').value.toLowerCase();
-        const deadlineFilter = document.getElementById('deadlineFilter').value;
-        const assigned_by_filter=document.getElementById('assigned_by_filter').value.toLowerCase();
-        const table = document.getElementById('taskTable');
-        const rows = table.getElementsByTagName('tr');
+function filterTable() {
+    const priorityFilter = document.getElementById('priorityFilter').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+    const departmentFilter = document.getElementById('departmentFilter').value.toLowerCase();
+    const deadlineFilter = document.getElementById('deadlineFilter').value;
+    const assignedByFilter = document.getElementById('assignedByFilter').value.toLowerCase();
+    const assignorDepartmentFilter = document.getElementById('assignorDepartmentFilter').value.toLowerCase();
 
-        for (let i = 1; i < rows.length; i++) {
-            const cells = rows[i].getElementsByTagName('td');
-            if (cells.length > 0) {
-                const priority = cells[2].innerText.toLowerCase();
-                const status = cells[3].innerText.toLowerCase();
-                const department = cells[4].innerText.toLowerCase();
-                
-                const deadline = cells[5].innerText;
-                const assigned_by = cells[6].innerText.toLowerCase();
-                const assignorDepartment = cells[7].innerText.toLowerCase();
+    const table = document.getElementById('taskTable');
+    const rows = table.getElementsByTagName('tr');
 
-                let displayRow = true;
+    for (let i = 1; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName('td');
+        if (cells.length > 0) {
+            const priority = cells[2].innerText.toLowerCase();
+            const status = cells[3].innerText.toLowerCase();
+            const department = cells[4].innerText.toLowerCase();
+            const assignedBy = cells[6].innerText.toLowerCase();
+            const assignorDepartment = cells[7].innerText.toLowerCase();
+            const deadline = cells[5].innerText;
 
-                if (priorityFilter && priority !== priorityFilter) displayRow = false;
-                if (statusFilter && status !== statusFilter) displayRow = false;
-                if (departmentFilter && department !== departmentFilter) displayRow = false;
-                if (assignorDepartmentFilter && assignorDepartment !== assignorDepartmentFilter) displayRow = false;
-                if (deadlineFilter) {
-                    const deadlineDate = new Date(deadline);
-                    const selectedDate = new Date(deadlineFilter);
-                    if (deadlineDate.getTime() !== selectedDate.getTime()) {
-                        displayRow = false;
-                    }
-                }
+            let displayRow = true;
 
-                if (assigned_by_filter && assigned_by !== assigned_by_filter) displayRow = false;
-
-                rows[i].style.display = displayRow ? '' : 'none';
+            if (priorityFilter && priority !== priorityFilter) displayRow = false;
+            if (statusFilter && status !== statusFilter) displayRow = false;
+            if (departmentFilter && department !== departmentFilter) displayRow = false;
+            if (assignedByFilter && assignedBy !== assignedByFilter) displayRow = false;
+            if (assignorDepartmentFilter && assignorDepartment !== assignorDepartmentFilter) displayRow = false;
+            if (deadlineFilter) {
+                const deadlineDate = new Date(deadline);
+                const selectedDate = new Date(deadlineFilter);
+                if (deadlineDate.getTime() !== selectedDate.getTime()) displayRow = false;
             }
+
+            rows[i].style.display = displayRow ? '' : 'none';
         }
     }
+}
 </script>
 {% endblock %}
