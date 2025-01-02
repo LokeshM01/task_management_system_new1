@@ -1,20 +1,192 @@
-{% extends 'base_generic.html' %}
-{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Log</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        /* General Styles */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
 
-{% block content %}
+        .task-manager-container {
+            display: flex;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            background-color: #3c3a5d;
+            color: #fff;
+            width: 180px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-radius: 20px;
+            margin: 8px;
+        }
+
+        .sidebar h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #d1c4e9;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            margin: 10px 0;
+        }
+
+        .sidebar ul li a {
+            text-decoration: none;
+            color: #d1c4e9;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 19px;
+        }
+
+        .sidebar ul li a.active, .sidebar ul li a:hover {
+            background-color: #5e548e;
+        }
+
+        .logout a {
+            color: #d1c4e9;
+            text-decoration: none;
+            text-align: center;
+            display: block;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #5e548e;
+            border-radius: 4px;
+        }
+
+        /* Main Content Styling */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Table Styling */
+        .task-table-container {
+            margin-top: 20px;
+            height: calc(100vh - 150px);
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-table table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fafafa;
+        }
+
+        .task-table th, .task-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .task-table th {
+            background-color: #565478;
+            color: #fff;
+            text-transform: uppercase;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .task-table tr:nth-child(even) {
+            background-color: #f4f4f8;
+        }
+
+        .task-table tr:hover {
+            background-color: #eceff4;
+            transition: background-color 0.3s ease;
+        }
+
+        .filter-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #5e548e;
+            color: white;
+            border: none;
+            border-radius: 19px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background-color: #443c68;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .task-manager-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
 <div class="task-manager-container">
     <!-- Sidebar -->
     <div class="sidebar">
         <h2>Task Management System</h2>
         <ul>
-            {% with request.user.userprofile as profile %}
-                {% if profile.category == 'Task Management System Manager' %}
-                    <li><a href="{% url 'activity' %}" class="active">Activity</a></li>
-                    <li><a href="{% url 'metrics' %}">Metrics</a></li>
-                    <li><a href="{% url 'user_profile' %}">User Profile</a></li>
-                {% endif %}
-            {% endwith %}
+            <li><a href="{% url 'activity' %}" class="{% if request.resolver_match.url_name == 'activity' %}active{% endif %}">
+                <span class="material-icons">analytics</span> Activity</a>
+            </li>
+            <li><a href="{% url 'metrics' %}" class="{% if request.resolver_match.url_name == 'metrics' %}active{% endif %}">
+                <span class="material-icons">bar_chart</span> Metrics</a>
+            </li>
+            <li><a href="{% url 'user_profile' %}" class="{% if request.resolver_match.url_name == 'user_profile' %}active{% endif %}">
+                <span class="material-icons">person</span> User Profile</a>
+            </li>
         </ul>
+        <div class="logout">
+            <a href="{% url 'logout' %}"><span class="material-icons">logout</span> Logout</a>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -25,151 +197,44 @@
         </div>
 
         <!-- Activity Log Table -->
-        <div class="activity-table">
-            {% if activity_logs %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>User</th>
-                        <th>Action</th>
-                        <th>Task ID</th>
-                        <th>Description</th>
-                        <th>Timestamp</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for log in activity_logs %}
-                    <tr>
-                        <td>{{ log.user.username }}</td>
-                        <td>{{ log.get_action_display }}</td>
-                        <td>{{ log.task.task_id }}</td>
-                        <td>{{ log.description }}</td>
-                        <td>{{ log.timestamp }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <button class="download-btn" onclick="window.location.href='{% url 'download_activity_log' %}'">Download Log</button>
-            {% else %}
-                <p>No activity logs available at the moment.</p>
-            {% endif %}
+        <div class="task-table-container">
+            <div class="task-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Task ID</th>
+                            <th>Description</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in activity_logs %}
+                        <tr>
+                            <td>{{ log.user.username }}</td>
+                            <td>{{ log.get_action_display }}</td>
+                            <td>{{ log.task.task_id }}</td>
+                            <td>{{ log.description }}</td>
+                            <td>{{ log.timestamp }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">No activity logs available at the moment.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button class="filter-btn" onclick="downloadLog()"><span class="material-icons">download</span> Download Log</button>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Inline CSS for styling -->
-<style>
-    .task-manager-container {
-        display: flex;
-        height: 100vh;
-        font-family: Arial, sans-serif;
+<script>
+    function downloadLog() {
+        window.location.href = "{% url 'download_activity_log' %}";
     }
-
-    /* Sidebar Styling */
-    .sidebar {
-        background-color: #f4f4f9;
-        color: #333;
-        width: 250px;
-        padding: 20px;
-        text-align: center;
-        border-right: 1px solid #ddd;
-    }
-    .sidebar h2 {
-        font-size: 22px;
-        color: #4CAF50;
-        margin-bottom: 20px;
-    }
-    .sidebar ul {
-        list-style: none;
-        padding: 0;
-    }
-    .sidebar ul li {
-        margin: 15px 0;
-    }
-    .sidebar ul li a {
-        text-decoration: none;
-        color: #333;
-        font-size: 18px;
-        display: block;
-        padding: 10px;
-        border-radius: 8px;
-        transition: background-color 0.3s ease;
-    }
-    .sidebar ul li a.active,
-    .sidebar ul li a:hover {
-        background-color: #4CAF50;
-        color: #fff;
-    }
-
-    /* Main Content Styling */
-    .main-content {
-        flex: 1;
-        padding: 20px;
-        overflow-y: auto;
-    }
-    .header h1 {
-        font-size: 24px;
-        color: #333;
-    }
-    .header p {
-        font-size: 14px;
-        color: #666;
-        margin-bottom: 20px;
-    }
-
-    /* Table Styling */
-    .activity-table {
-        margin-top: 20px;
-    }
-    .activity-table table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .activity-table th,
-    .activity-table td {
-        padding: 12px;
-        border: 1px solid #ddd;
-        text-align: left;
-    }
-    .activity-table th {
-        background-color: #f4f4f9;
-        color: #333;
-    }
-    .activity-table td {
-        background-color: #fff;
-        color: #333;
-    }
-    .activity-table tr:hover td {
-        background-color: #E8F5E9;
-    }
-
-    /* Download Button Styling */
-    .download-btn {
-        margin-top: 23px;
-        padding: 10px 20px;
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-    .download-btn:hover {
-        background-color: #388E3C;
-    }
-
-    /* Responsive Styling */
-    @media (max-width: 768px) {
-        .task-manager-container {
-            flex-direction: column;
-        }
-        .sidebar {
-            width: 100%;
-            text-align: center;
-            border-right: none;
-            border-bottom: 1px solid #ddd;
-        }
-    }
-</style>
-{% endblock %}
+</script>
+</body>
+</html>
