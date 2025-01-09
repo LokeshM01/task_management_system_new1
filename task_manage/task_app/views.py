@@ -724,6 +724,23 @@ def reassign_within_department(request, task_id):
             task.assigned_to = new_assignee
             task.save()
 
+            # Notify the assignee (if assigned)
+            if task.assigned_to:
+                assignee_email = task.assigned_to.email
+                view_ticket_url = request.build_absolute_uri(f'/tasks/detail/{task.task_id}/')
+                context = {
+                    'user': task.assigned_to,
+                    'ticket': task,
+                    'view_ticket_url': view_ticket_url,
+                }
+                send_email_notification(
+                    subject="You Have Been Assigned a New Task",
+                    template_name='emails/ticket_assigned.html',
+                    context=context,
+                    recipient_email=assignee_email,
+                )
+
+
             # Log the reassignment action
             ActivityLog.objects.create(
                 action='assigned',
