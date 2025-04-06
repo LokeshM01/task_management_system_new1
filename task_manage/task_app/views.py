@@ -485,21 +485,24 @@ def metrics(request):
     # Get the current time and the last 24 hours time
     now = timezone.now()
     last_24_hours = now - timezone.timedelta(hours=24)
-    today_date=date.today()
+    today_date = date.today()
+    seventy_two_hours = now - timedelta(hours=72)
+
     # Metrics for Last 24 Hours (raised and received)
     metrics_data = Task.objects.values('department__name').annotate(
         tickets_received_last_24hr=Count('id', filter=Q(department__name=F('department__name'), assigned_date__gte=last_24_hours, assigned_date__lte=today_date)),
-        open_tickets_received=Count('id', filter=Q(department__name=F('department__name'), status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing'] , assigned_date__lte=today_date)),
-        
+        open_tickets_received=Count('id', filter=Q(department__name=F('department__name'), status__in=['In Progress', 'Not Started', 'Waiting for confirmation', 'Pending', 'Delay processing', 'Processing'], assigned_date__lte=today_date)),
     ).order_by('department__name')
 
     # Add all-time data for raised and received tickets
+    total_tickets_passed_72_hours = 0
+    total_tickets_passed_revised_deadline = 0
     for data in metrics_data:
         department_name = data['department__name']
 
         tickets_raised_all_time = Task.objects.filter(
             assigned_by__userprofile__department__name=department_name,
-            status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing'],
+            status__in=['In Progress', 'Not Started', 'Waiting for confirmation', 'Pending', 'Delay processing', 'Processing'],
             assigned_date__lte=today_date
         ).count()
 
@@ -513,17 +516,35 @@ def metrics(request):
 
         tickets_received_all_time = Task.objects.filter(
             department__name=department_name,
-            status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing'],
+            status__in=['In Progress', 'Not Started', 'Waiting for confirmation', 'Pending', 'Delay processing', 'Processing'],
             assigned_date__lte=today_date
         ).count()
 
         data['open_tickets_raised'] = tickets_raised_all_time
         data['open_tickets_received'] = tickets_received_all_time
-        # data['older_open_tickets'] = data['open_tickets_received'] - data['tickets_received_last_24hr']
+        
+        # Tickets passed 72 hours after raising
+        passed_72_hours = Task.objects.filter(
+            department__name=department_name,
+            assigned_date__lte=seventy_two_hours,
+            status__in=['In Progress', 'Not Started', 'Waiting for confirmation', 'Pending', 'Delay processing', 'Processing'],
+        ).count()
+        data['tickets_passed_72_hours'] = passed_72_hours
+        total_tickets_passed_72_hours += passed_72_hours
+        
+        # Tickets passed the revised deadline or original deadline
+        passed_revised_deadline = Task.objects.filter(
+            department__name=department_name,
+            deadline__lte=now,
+            status__in=['In Progress', 'Not Started', 'Waiting for confirmation', 'Pending', 'Delay processing', 'Processing'],
+        ).count()
+        data['tickets_passed_revised_deadline'] = passed_revised_deadline
+        total_tickets_passed_revised_deadline += passed_revised_deadline
+
         # Get older open tickets with task data
         older_open_tickets_data = Task.objects.filter(
             department__name=department_name,
-            status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing'],
+            status__in=['In Progress', 'Not Started', 'Waiting for confirmation', 'Pending', 'Delay processing', 'Processing'],
             assigned_date__lt=last_24_hours
         ).count()
         data['older_open_tickets'] = older_open_tickets_data  # Storing actual task data
@@ -531,28 +552,21 @@ def metrics(request):
     for data in metrics_data:
         department_name = data['department__name']
 
-        # Filter tasks where assigned_to department matches the current department
         all_task_of_this_dept = Task.objects.filter(
             assigned_to__userprofile__department__name=department_name,
-            status__in=['In Progress', 'Not Started','Pending','Processing','Delay Processing','Waiting for confirmation'],
-            # assigned_date__lt=last_24_hours ,
+            status__in=['In Progress', 'Not Started', 'Pending', 'Processing', 'Delay Processing', 'Waiting for confirmation'],
             assigned_date__lte=today_date
-
         )
 
-        # Create a map to store pending tickets count by assigned_by department
         pending_by_dept = {}
 
-        # Loop through tasks and populate pending_by_dept map
         for task in all_task_of_this_dept:
-            assignor_dept_name = task.assigned_by.userprofile.department.name  # Updated variable name
+            assignor_dept_name = task.assigned_by.userprofile.department.name
 
-            # Increment the pending ticket count for the assignor department
             if assignor_dept_name not in pending_by_dept:
                 pending_by_dept[assignor_dept_name] = 0
             pending_by_dept[assignor_dept_name] += 1
 
-        # Set the pending_by_dept map as the bifurcation value
         data['pending_tickets_bifurcation'] = pending_by_dept
 
     # Total row for the last 24 hours
@@ -560,9 +574,8 @@ def metrics(request):
     total_received_last_24hr = sum(d.get('tickets_received_last_24hr', 0) for d in metrics_data)
     total_open_raised = sum(d.get('open_tickets_raised', 0) for d in metrics_data)
     total_open_received = sum(d.get('open_tickets_received', 0) for d in metrics_data)
-    total_older_open_tickets = sum(d.get('older_open_tickets', []) for d in metrics_data)  # Count the number of tasks
+    total_older_open_tickets = sum(d.get('older_open_tickets', []) for d in metrics_data)
 
-    # Calculate Total Pending Tickets for the summary
     total_pending_tickets = 0
     for department in metrics_data:
         pending_bifurcation = department.get('pending_tickets_bifurcation', {})
@@ -574,13 +587,16 @@ def metrics(request):
         'total_open_raised': total_open_raised,
         'total_open_received': total_open_received,
         'total_older_open_tickets': total_older_open_tickets,
-        'total_pending_tickets': total_pending_tickets,  # Include total pending tickets in the summary
+        'total_pending_tickets': total_pending_tickets,
+        'total_tickets_passed_72_hours': total_tickets_passed_72_hours,  # Include total passed 72 hours in the summary
+        'total_tickets_passed_revised_deadline': total_tickets_passed_revised_deadline,  # Include total passed revised deadline in the summary
     }
 
     return render(request, 'tasks/metrics.html', {
         'metrics_data': metrics_data,
         'metrics_summary': metrics_summary,
     })
+
     
 
 
@@ -594,11 +610,13 @@ def download_metrics(request):
     # Get the current time and the last 24 hours time
     now = timezone.now()
     last_24_hours = now - timezone.timedelta(hours=24)
-    today_date=date.today()
+    today_date = date.today()
+    seventy_two_hours = now - timedelta(hours=72)
+
     # Metrics for Last 24 Hours (raised and received)
     metrics_data = Task.objects.values('department__name').annotate(
-        tickets_received_last_24hr=Count('id', filter=Q(assigned_to__userprofile__department__name=F('department__name'), assigned_date__gte=last_24_hours,assigned_date__lte=today_date)),
-        open_tickets_received=Count('id', filter=Q(assigned_to__userprofile__department__name=F('department__name'), status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing'],assigned_date__lte=today_date)),
+        tickets_received_last_24hr=Count('id', filter=Q(assigned_to__userprofile__department__name=F('department__name'), assigned_date__gte=last_24_hours, assigned_date__lte=today_date)),
+        open_tickets_received=Count('id', filter=Q(assigned_to__userprofile__department__name=F('department__name'), status__in=['In Progress', 'Not Started', 'Waiting for confirmation', 'Pending', 'Delay processing', 'Processing'], assigned_date__lte=today_date)),
     ).order_by('department__name')
 
     # Add all-time data for raised and received tickets
@@ -607,7 +625,7 @@ def download_metrics(request):
 
         tickets_raised_all_time = Task.objects.filter(
             assigned_by__userprofile__department__name=department_name,
-            status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing'],
+            status__in=['In Progress', 'Not Started', 'Waiting for confirmation', 'Pending', 'Delay processing', 'Processing'],
             assigned_date__lte=today_date
         ).count()
 
@@ -621,17 +639,33 @@ def download_metrics(request):
 
         tickets_received_all_time = Task.objects.filter(
             assigned_to__userprofile__department__name=department_name,
-            status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing'],
+            status__in=['In Progress', 'Not Started', 'Waiting for confirmation', 'Pending', 'Delay processing', 'Processing'],
             assigned_date__lte=today_date
         ).count()
 
         data['open_tickets_raised'] = tickets_raised_all_time
         data['open_tickets_received'] = tickets_received_all_time
 
+        # Tickets passed 72 hours after raising
+        passed_72_hours = Task.objects.filter(
+            department__name=department_name,
+            assigned_date__lte=seventy_two_hours,
+            status__in=['In Progress', 'Not Started', 'Waiting for confirmation', 'Pending', 'Delay processing', 'Processing'],
+        ).count()
+        data['tickets_passed_72_hours'] = passed_72_hours
+        
+        # Tickets passed the revised deadline or original deadline
+        passed_revised_deadline = Task.objects.filter(
+            department__name=department_name,
+            deadline__lte=now,
+            status__in=['In Progress', 'Not Started', 'Waiting for confirmation', 'Pending', 'Delay processing', 'Processing'],
+        ).count()
+        data['tickets_passed_revised_deadline'] = passed_revised_deadline
+
         # Get older open tickets with task data
         older_open_tickets_data = Task.objects.filter(
             assigned_to__userprofile__department__name=department_name,
-            status__in=['In Progress', 'Not Started','Waiting for confirmation','Pending','Delay processing','Processing'],
+            status__in=['In Progress', 'Not Started', 'Waiting for confirmation', 'Pending', 'Delay processing', 'Processing'],
             assigned_date__lt=last_24_hours
         )
         data['older_open_tickets'] = older_open_tickets_data  # Storing actual task data
@@ -643,7 +677,7 @@ def download_metrics(request):
         # Filter tasks where assigned_to department matches the current department
         all_task_of_this_dept = Task.objects.filter(
             assigned_to__userprofile__department__name=department_name,
-            status__in=['In Progress', 'Not Started','Pending','Processing','Delay Processing','Waiting for confirmation'],
+            status__in=['In Progress', 'Not Started', 'Pending', 'Processing', 'Delay Processing', 'Waiting for confirmation'],
             assigned_date__lt=last_24_hours
         )
 
@@ -676,7 +710,9 @@ def download_metrics(request):
         'Tickets Raised Last 24hr',
         'Open Tickets Raised',
         'Older Open Tickets',
-        'Pending Tickets Bifurcation'
+        'Pending Tickets Bifurcation',
+        'Tickets Passed 72 Hours After Raising',  # New Column Header
+        'Tickets Passed the Revised Deadline'   # New Column Header
     ])
 
     # Writing data rows
@@ -688,6 +724,8 @@ def download_metrics(request):
         open_tickets_raised = data['open_tickets_raised']
         older_open_tickets = len(data['older_open_tickets'])  # Assuming this is a list of task objects
         pending_tickets_bifurcation = str(data['pending_tickets_bifurcation'])  # Convert to string for CSV format
+        tickets_passed_72_hours = data['tickets_passed_72_hours']
+        tickets_passed_revised_deadline = data['tickets_passed_revised_deadline']
 
         writer.writerow([
             department_name,
@@ -696,11 +734,12 @@ def download_metrics(request):
             tickets_raised_last_24hr,
             open_tickets_raised,
             older_open_tickets,
-            pending_tickets_bifurcation
+            pending_tickets_bifurcation,
+            tickets_passed_72_hours,  # New Column Data
+            tickets_passed_revised_deadline  # New Column Data
         ])
 
     return response
-
 
 @login_required
 def reassign_within_department(request, task_id):
