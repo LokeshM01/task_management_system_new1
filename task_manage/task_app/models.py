@@ -164,14 +164,3 @@ class ActivityLog(models.Model):
 
     def __str__(self):
         return f"{self.user.username} {self.action} task {self.task.task_id} on {self.timestamp}"
-    
-
-class TaskNoteAttachment(models.Model):
-    task = models.ForeignKey(Task, on_delete=models.CASCADE)
-    added_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    attachment = models.FileField(upload_to='task_notes/', blank=True, null=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Attachment for task {self.task.task_id} added by {self.added_by.username}"
-

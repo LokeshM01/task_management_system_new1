@@ -127,7 +127,7 @@ button:active {
   
   <div class="task-note-container">
     <!-- Task Note Update Form -->
-    <form method="post" enctype="multipart/form-data">
+    <form method="post">
       {% csrf_token %}
       
       <!-- Note Textarea Field -->
@@ -135,14 +135,8 @@ button:active {
         <label for="note">Add a Note:</label>
         <textarea id="note" name="note" rows="4" placeholder="Enter your note here...">{{ task.notes }}</textarea>
       </div>
-    
-      <!-- Attachment File Field -->
-      <div class="form-group">
-        <label for="attachment">Add Attachment:</label>
-        <input type="file" id="attachment" name="attachment" />
-      </div>
-    
-      <!-- Save Note and Reassign Button -->
+      
+      <!-- Save Note Button -->
       <button type="submit">Save Note And Reassign</button>
     </form>
 

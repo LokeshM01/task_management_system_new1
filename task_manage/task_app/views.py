@@ -19,7 +19,6 @@ from django.template.loader import render_to_string
 from django.utils.timezone import now
 from .tasks import send_deadline_reminders_logic, notify_overdue_tasks_logic
 from datetime import date
-from .models import TaskNoteAttachment
 
 def send_email_notification(subject, template_name, context, recipient_email):
     """Utility function to send email notifications."""
@@ -280,14 +279,7 @@ def edit_task(request, task_id):
 def task_detail(request, task_id):
     task = get_object_or_404(Task, task_id=task_id)
     user_profile = UserProfile.objects.get(user=request.user)
-    
-    # Fetch TaskNoteAttachments related to this task
-    assignee_attachments = TaskNoteAttachment.objects.filter(task=task)
-
-    return render(request, 'tasks/task_detail.html', {
-        'task': task,
-        'assignee_attachments': assignee_attachments
-    })
+    return render(request, 'tasks/task_detail.html', {'task': task})
 
 @login_required
 def update_task_status(request, task_id):
@@ -419,24 +411,17 @@ def task_note_page(request, task_id):
     task.assigned_to.userprofile.department == user_profile.department
     ):
         raise PermissionDenied
+    # if task.assigned_to != request.user:
+    #     raise PermissionDenied("You can only add notes to tasks that are assigned to you.")
 
-    # Handle note addition with attachment
+    # Handle note addition
     if request.method == 'POST':
         note = request.POST.get('note')
         task.notes = note
-        from_dept = task.assigned_by.userprofile.department
-
-        # Handle the file attachment
-        attachment = request.FILES.get('attachment')
-        if attachment:
-            TaskNoteAttachment.objects.create(
-                task=task,
-                added_by=request.user,
-                attachment=attachment
-            )
+        from_dept=task.assigned_by.userprofile.department
 
         task.assigned_to = task.assigned_by
-        task.department = from_dept
+        task.department=from_dept
         task.save()
 
         # Log the reassignment
@@ -454,11 +439,9 @@ def task_note_page(request, task_id):
             task=task,
             description=f"Note added by {request.user.username}: {note}"
         )
-
         return redirect('task_detail', task_id=task.task_id)  # Redirect back to task detail page
 
     return render(request, 'tasks/task_note_page.html', {'task': task})
-
 
 @login_required
 def dashboard(request):
