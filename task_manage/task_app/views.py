@@ -411,17 +411,20 @@ def task_note_page(request, task_id):
     task.assigned_to.userprofile.department == user_profile.department
     ):
         raise PermissionDenied
-    # if task.assigned_to != request.user:
-    #     raise PermissionDenied("You can only add notes to tasks that are assigned to you.")
 
-    # Handle note addition
+    # Handle note addition and file attachment by assignee
     if request.method == 'POST':
         note = request.POST.get('note')
         task.notes = note
-        from_dept=task.assigned_by.userprofile.department
+        from_dept = task.assigned_by.userprofile.department
+
+        # Handle the file attachment by assignee
+        attachment = request.FILES.get('attachment_by_assignee')
+        if attachment:
+            task.attachment_by_assignee = attachment
 
         task.assigned_to = task.assigned_by
-        task.department=from_dept
+        task.department = from_dept
         task.save()
 
         # Log the reassignment
@@ -439,9 +442,11 @@ def task_note_page(request, task_id):
             task=task,
             description=f"Note added by {request.user.username}: {note}"
         )
-        return redirect('task_detail', task_id=task.task_id)  # Redirect back to task detail page
+
+        return redirect('task_detail', task_id=task.task_id)
 
     return render(request, 'tasks/task_note_page.html', {'task': task})
+
 
 @login_required
 def dashboard(request):

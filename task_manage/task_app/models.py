@@ -71,7 +71,7 @@ class Task(models.Model):
 
     # Fields for the Task model
     task_id = models.CharField(max_length=15, unique=True, editable=False)
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
+    department = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True)
     assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='tasks_assigned')
     assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='tasks_received')
     assigned_date = models.DateTimeField(default=timezone.now)
@@ -90,6 +90,9 @@ class Task(models.Model):
     recurrence_count = models.IntegerField(default=1)
     recurrence_duration = models.IntegerField(default=1)
     is_recurred_task = models.BooleanField(default=False)
+
+    # New field for attachment uploaded by assignee
+    attachment_by_assignee = models.FileField(upload_to='task_assignee_attachments/', blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.task_id:
@@ -111,7 +114,6 @@ class Task(models.Model):
         """
         Create new recurring tasks based on recurrence type, count, and duration.
         """
-        # from datetime import timedelta
         self.assigned_date = date.today()
         for i in range(1, self.recurrence_count + 1):
             if self.recurrence_type == 'daily':
